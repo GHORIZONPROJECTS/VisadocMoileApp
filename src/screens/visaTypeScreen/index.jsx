@@ -12,16 +12,16 @@ import { FontAwesome, Ionicons} from '@expo/vector-icons'
 import BackArrow from '../../components/backArrow'
 import { auth, db } from '../../firebase';
 import { AuthContext } from '../../config/AuthContext'
-import { doc, getDoc, setDoc, serverTimestamp, updateDoc, collection, query, where  } from "firebase/firestore";
+import { doc, getDoc, setDoc, serverTimestamp, updateDoc  } from "firebase/firestore";
 
 
-export default function PurposeOfTravelScreen({ navigation }) {
+export default function VisaTypeScreen({ navigation }) {
 
    const [selectedItem, setSelectedItem] = useState(null);
    const [errorMessage, setErrorMessage] = useState('')
    const selectedData = [
-    {value:'Tourism', title:'Tourism', image:require('../../../assets/images/singleTourist.png')},
-    {value:'Study', title: 'Study', image:require('../../../assets/images/student.jpeg')},
+    {value:'Single', title:'Single', image:require('../../../assets/images/singleTraveller.png')},
+    {value:'Family', title: 'Family', image:require('../../../assets/images/familyTravellers.png')},
    ]
 
     // React.useLayoutEffect(() => {
@@ -86,61 +86,23 @@ export default function PurposeOfTravelScreen({ navigation }) {
 
         try {
 
-
-            // const q = query(collection(db, "order"), where("userId", "==", user.uid));
-
-            // console.log(q)
-
-            // await updateDoc(doc(db, "order", user.uid), {
-
-            //     travelPurpose : selectedItem,
-
-            //     timeStamp: serverTimestamp(),
-
-            //  });
-
-
-          // const docRef = doc(db, "order", XuBPcFDfHXBDyalvfvXY);
-
-          //   await updateDoc(docRef, {
-              
-          //     travelPurpose : selectedItem,
-
-          //     timeStamp: serverTimestamp(),
-
-          //   });
-
-
-
-          // db.collection("order").doc(user.uid).update({
-
-          //   travelPurpose : selectedItem,
-
-          //   timeStamp: serverTimestamp(),
-
-          // }).then(function() {
-
-          //   console.log("Frank food updated");
-
-          //   navigation.navigate("VisaTypeScreen");
-
-          // });
-
-
-
-
            await updateDoc(doc(db, "travellers", user.uid), {
         
-        travelPurpose : selectedItem,
+        visaType : selectedItem,
         timeStamp: serverTimestamp(),
         
 
-        }).then(() => {
-          // setLoading(false)
-          // showToast()
-          navigation.navigate("VisaTypeScreen");
-            
-        })
+    }).then(() => {
+      // setLoading(false)
+      // showToast()
+      // if (condition) {
+        
+      // } else {
+        
+      // }
+      navigation.navigate("AvailableDocumentScreen");
+        
+    })
   
           
         } catch (error) {
@@ -150,7 +112,7 @@ export default function PurposeOfTravelScreen({ navigation }) {
        
       }else{
 
-        return setErrorMessage('Please select your purpose of travel');
+        return setErrorMessage('Please select your visa Type');
         
       }
         
@@ -165,7 +127,7 @@ export default function PurposeOfTravelScreen({ navigation }) {
     <View style={{ paddingVertical: 20 }}>
       <BackArrow onPress={() => navigation.goBack()}/>
       <View style={{marginTop:30,marginBottom:10, justifyContent:'center', width:'100%',alignItems:'center'}}>
-        <Text style={{fontSize:18, marginBottom:10, color:'black'}}>What is your purpose of travel?</Text>  
+        <Text style={{fontSize:18, marginBottom:10, color:'black'}}>Please Choose a Visa Type.</Text>  
         {/* <Text style={{fontSize:13, fontWeight:400}}>Select a type of account you want to create</Text> */}
       </View> 
 

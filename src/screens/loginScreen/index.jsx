@@ -30,7 +30,7 @@ const LoginScreen = ({navigation}) => {
     
         if (!email) {
             
-            errors.email = 'Please enter email';
+            errors.email = 'Please enter your email';
     
         } else if (!email.includes('@') || !email.includes('.')) {
             
@@ -110,14 +110,14 @@ const LoginScreen = ({navigation}) => {
 
       }
 
-      if(errorCode === 'auth/invalid-login-credentials'){
+      if(errorCode === 'auth/invalid-credential'){
 
         return setErrors({email : 'Invalid login credentials'})
 
       }
 
       
-      if(errorCode === 'auth/invalid-login-credentials'){
+      if(errorCode === 'auth/invalid-password'){
 
         return setErrors({password : 'Invalid login credentials'})
 
@@ -161,8 +161,8 @@ const LoginScreen = ({navigation}) => {
                     <Image
                         source = {require('../../../assets/images/logo.png')}
                         alt=''
-                        style={{width : 250, height : 100}}
-                        resizeMode = 'cover'
+                        style={{width : 150, height : 100, marginLeft:50}}
+                        resizeMode = 'contain'
 
                     />
                 </View>
@@ -183,7 +183,7 @@ const LoginScreen = ({navigation}) => {
         <View style={{paddingTop : 40}}>
             <Text style={{fontSize : 14, color : 'gray', marginBottom : 10 }}>Enter Email</Text>
             <View style = {{flexDirection : 'row', alignItems : 'center', paddingVertical:12,  paddingHorizontal : 10, backgroundColor : '#f2f2f2', borderRadius : 5, borderWidth : 1, borderColor : '#f2f2f2',}}>
-                <Ionicons name = 'ios-person' size={20} color='gray'/>
+                <MaterialIcons name="email" size={20} color='gray'/>
                 <TextInput
                 placeholder = ''
                 value = {email}

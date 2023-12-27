@@ -6,7 +6,8 @@ import BackArrow from '../../components/backArrow';
 import CountryPicker from 'react-native-country-picker-modal'
 import { MaterialIcons, Ionicons } from '@expo/vector-icons';
 import { AuthContext } from '../../config/AuthContext'
-import { doc, getDoc, setDoc, serverTimestamp, updateDoc  } from "firebase/firestore";
+import {serverTimestamp, doc, getDoc, setDoc, updateDoc, addDoc, collection, onSnapshot } from "firebase/firestore";
+
 
 
 
@@ -59,28 +60,49 @@ const DestinationCountryScreen = ({navigation}) => {
 
   const handleCountry = async() => {
 
-    try{
-      
-      await updateDoc(doc(db, "travellers", user.uid), {
-        
+    try {
+
+      const orderData =  await addDoc(collection(db, "order"), {
+
+      // await db.collection("visaRequest").doc(user.uid).set({
+        userId : user.uid,
         country : country,
         timeStamp: serverTimestamp(),
+      
+      }).then(function() {
+        console.log(" created");
+        navigation.navigate('PurposeOfTravelScreen')
+      });
+      
+    } catch (error) {
+
+      console.log(error.message);
+
+    }
+
+  //   try{
+      
+  //     // await updateDoc(doc(db, "travellers", user.uid), {
+  //       await setDoc(doc(db, "visa", user.uid), {
+        
+  //       country : country,
+  //       timeStamp: serverTimestamp(),
         
 
-    }).then(() => {
-      // setLoading(false)
-      // showToast()
-      navigation.navigate('PurposeOfTravelScreen')
+  //   }).then(() => {
+  //     // setLoading(false)
+  //     // showToast()
+  //     navigation.navigate('PurposeOfTravelScreen')
 
         
-    })
+  //   })
 
   
           
-  }catch(error){
+  // }catch(error){
 
-    console.log(error.message);
-  }
+  //   console.log(error.message);
+  // }
 
    
   }
@@ -111,11 +133,15 @@ const DestinationCountryScreen = ({navigation}) => {
 
       />
      
-      <View style={{position:'absolute', width:'100%', height: SIZES.height, padding:20, flexDirection:'column', marginBottom: 30}}>
-
-      <View style={{marginBottom:350}}>
-          <BackArrow onPress={() => navigation.goBack()}/>
-
+      <View style={{position:'absolute', width:'100%', height: SIZES.height, padding:20, flexDirection:'column', justifyContent:'space-between'}}>
+        <View>
+          <View style = {{flexDirection : 'row', justifyContent : 'space-between', alignItems : 'center'}}>
+              <BackArrow onPress={() => navigation.goBack()}/>
+              <View style = {{flexDirection : 'row'}}>
+                <Text style = {{fontSize : 18, marginHorizontal : 5, color : 'gray'}}>Welcome</Text>
+                <Text style = {{fontSize : 18, color : 'darkblue' }}>{userData.firstname}</Text>
+              </View>
+          </View>
           <View style={{justifyContent:'center', alignItems:'center'}}>
             <Text style={{fontSize:24, fontWeight:'bold'}}>Where To?</Text>
           </View>
@@ -156,7 +182,7 @@ const DestinationCountryScreen = ({navigation}) => {
 
       </View>
 
-      <Pressable onPress = {handleCountry}  style = {{ backgroundColor : 'brown', width : '100%', marginBottom : 20, alignItems : 'center', justifyContent : 'center',paddingVertical : 20, flexDirection : 'row',}}>
+      <Pressable onPress = {handleCountry}  style = {{ backgroundColor : 'brown', width : '100%', marginBottom : 80, alignItems : 'center', justifyContent : 'center',paddingVertical : 20, flexDirection : 'row',}}>
         <Text style={{color : 'white', fontSize : 18, marginRight : 10}}>Next</Text>
         <View style = {{ alignItems : 'center', flexDirection : 'row', width : 17}}>
           <Ionicons name="chevron-forward" size={24} color="white" />

@@ -1,5 +1,5 @@
-import { Pressable, StyleSheet, Text, View, Image, ScrollView } from 'react-native'
-import React, {useState, useContext, useEffect} from 'react'
+import { Pressable, StyleSheet, Text, View, Image, ScrollView, TouchableOpacity } from 'react-native'
+import React, {useState, useContext, useEffect, useRef, useMemo} from 'react'
 import { getAuth, signOut } from "firebase/auth";
 import { auth, db } from '../../firebase';
 import { collection, onSnapshot, doc, getDoc, query, where, getDocs } from "firebase/firestore";
@@ -7,8 +7,48 @@ import { AuthContext } from '../../config/AuthContext'
 import { useNavigation } from '@react-navigation/native';
 import { MaterialIcons, Ionicons } from '@expo/vector-icons';
 import BackArrow from '../../components/backArrow';
+import Animated from 'react-native-reanimated';
+// import {BottomSheet} from 'reanimated-bottom-sheet';
+// import { BottomSheet } from '@gorhom/bottom-sheet';
+// import BottomSheet from 'react-native-bottomsheet-reanimated';
+import {
+  Button,
+  MD3Colors,
+  ProgressBar,
+  Divider,
+  Portal,
+  Dialog,
+  Avatar
+} from "react-native-paper";
 
 const SafetyAndSecurityScreen = ({navigation}) => {
+  
+
+  const [visible, setVisible] = useState(false);
+
+
+  const toggleBottomNavigationView = () => {
+
+     setVisible(!visible);
+
+  };
+
+  const renderContent = () => (
+    <View
+      style={{
+        backgroundColor: 'white',
+        padding: 16,
+        height: 450,
+      }}
+    >
+      <Text>Swipe down to close</Text>
+    </View>
+  );
+
+  // const sheetRef = useRef(null);
+  // const bottomSheetRef = useRef(null);
+
+  // const snapPoints = useMemo(() => ['12%', '50%'], []);
 
   // const navigation = useNavigation();
 
@@ -131,9 +171,57 @@ const SafetyAndSecurityScreen = ({navigation}) => {
 
 
 
+
 </View>
 
-        {/* <View style = {{ marginVertical : 10,}}>
+{/* <View style={{flexDirection:'row'}}>
+
+  {/* <TouchableOpacity onPress={() => sheetRef.current.snapTo(0)}>
+
+      <Text>Privacy Policy, </Text>
+
+  </TouchableOpacity> */}
+
+
+  {/* <BottomSheet
+          keyboardAware
+          bottomSheerColor="#FFFFFF"
+          ref="SheetRef"
+          initialPosition={'50%'} //200, 300
+          snapPoints={['50%', '100%']}
+          isBackDrop={true}
+          isBackDropDismissByPress={true}
+          isRoundBorderWithTipHeader={true}
+          // backDropColor="red"
+          // isModal
+          // containerStyle={{backgroundColor:"red"}}
+          // tipStyle={{backgroundColor:"red"}}
+          // headerStyle={{backgroundColor:"red"}}
+          // bodyStyle={{backgroundColor:"red",flex:1}}
+          header={
+            <View>
+              <Text style={styles.text}>Header</Text>
+            </View>
+          }
+          body={
+            <View style={styles.body}>
+              <Text style={styles.text}>Body</Text>
+            </View>
+          }
+        /> */}
+
+  {/* <Button
+          title="Open Bottom Sheet"
+          onPress={() => sheetRef.current.snapTo(0)}
+        /> */}
+  
+
+{/* </View>  */}
+
+
+
+
+{/* <View style = {{ marginVertical : 10,}}>
 
 <View>
   <Text style = {{color : '#000000', lineHeight : 20, fontWeight : 'bold'}}>Personal Payment Security. </Text>
@@ -155,13 +243,7 @@ const SafetyAndSecurityScreen = ({navigation}) => {
 
 </View> */}
 
-     
-
        
-
-       
-        
-      
       </View>
       
     
@@ -169,19 +251,17 @@ const SafetyAndSecurityScreen = ({navigation}) => {
       
       {/* <Text>TermsAndConditionsScreen</Text> */}
 
-      <Pressable onPress = {() => {navigation.navigate('DestinationCountryScreen')}}  style = {{ backgroundColor : 'brown', width : '100%', marginVertical : 20, alignItems : 'center', justifyContent : 'center', bottom : 0, paddingVertical : 20, flexDirection : 'row',}}>
+    <Pressable onPress = {() => {navigation.navigate('DestinationCountryScreen')}}  style = {{ backgroundColor : 'brown', width : '100%', marginVertical : 20, alignItems : 'center', justifyContent : 'center', bottom : 0, paddingVertical : 20, flexDirection : 'row',}}>
         <Text style={{color : 'white', fontSize : 18, marginRight : 10}}>Visa Application</Text>
         <View style = {{ alignItems : 'center', flexDirection : 'row', width : 17}}>
           <Ionicons name="chevron-forward" size={24} color="white" />
           <Ionicons name="chevron-forward" size={24} color="white" />
         </View>
         
-      </Pressable>
-      
-      {/* <Pressable onPress = {() => logOut()}  style = {{padding :10, backgroundColor : 'brown', width : 200, marginVertical : 20}}>
-        <Text style={{color : 'white'}}>Logout</Text>
-      </Pressable> */}
+    </Pressable>
+   
     </View>
+   
   )
 }
 

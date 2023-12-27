@@ -7,6 +7,7 @@ import { Ionicons } from '@expo/vector-icons'
 // // import Styles from './styles.jsx'
 import { AuthenticatedUserProvider } from './src/config/AuthContext';
 import RootNavigation from './src/navigations/rootNavigation';
+import { PaperProvider } from 'react-native-paper';
 
 
 const slides = [
@@ -142,7 +143,9 @@ export default function App() {
 
     <AuthenticatedUserProvider>
       <GestureHandlerRootView style={{flex:1}}>
+      <PaperProvider>
         <RootNavigation/>
+      </PaperProvider>
       </GestureHandlerRootView>
     </AuthenticatedUserProvider>
 

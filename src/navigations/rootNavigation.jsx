@@ -39,7 +39,7 @@ const RootNavigation = () => {
             {/* <AuthNavigation/> */}
 
         </NavigationContainer>
-        </PaperProvider>
+      </PaperProvider>
 
     )
 

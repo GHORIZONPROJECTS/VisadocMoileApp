@@ -168,19 +168,29 @@ const RegisterScreen = ({navigation}) => {
 
         if(errorCode === 'auth/email-already-in-use'){
 
-            return setErrors({email : 'Email already in use'})
+             setErrors({email : 'Email already in use'})
+            
 
         }
 
         if(errorCode === 'auth/invalid-email'){
 
-            return setErrors({email : 'Email is invalid'})
+             setErrors({email : 'Email is invalid'})
+
+
+            
 
         }
 
-        setErrors({})
+        if (errorCode === 'auth/invalid-email-verified') {
 
-        setShowErrors(false)
+            setErrors({email : 'Email is not correct'})
+            
+        }
+
+        // setErrors({})
+
+        // setShowErrors(false)
 
         setLoading(false)
         // ..
@@ -225,8 +235,8 @@ const RegisterScreen = ({navigation}) => {
                 <Image
                     source = {require('../../../assets/images/logo.png')}
                     alt=''
-                    style={{width : 250, height : 80}}
-                    resizeMode = 'cover'
+                    style={{width : 150, height : 80, marginLeft:50}}
+                    resizeMode = 'contain'
 
                 />
             </View>
@@ -242,11 +252,33 @@ const RegisterScreen = ({navigation}) => {
     <ScrollView 
         showsVerticalScrollIndicator = {false}
         style = {{width : '100%', height : '90%', backgroundColor : 'white', borderTopRightRadius : 50, borderTopLeftRadius : 50, paddingHorizontal : 40}}>
-        <View style={{paddingTop : 30}}>
-            <Text style={{fontSize : 14, color : 'gray', marginBottom : 2 }}>Enter Email</Text>
+
+<View style={{paddingTop : 30}}>
+            <Text style={{fontSize : 14, color : 'gray', marginBottom : 2 }}>Firstname</Text>
 
             <View style = {{flexDirection : 'row', alignItems : 'center', paddingVertical:12,  paddingHorizontal : 10, backgroundColor : '#f2f2f2', borderRadius : 5, borderWidth : 1, borderColor : '#f2f2f2',}}>
                 <Ionicons name = 'ios-person' size={20} color='gray'/>
+                <TextInput
+                placeholder = ''
+                placeholderTextColor = 'lightgray'
+                value = {firstname}
+                onChangeText = {e => setFirstname(e)}
+                style={{fontSize : 16, color : 'gray', marginHorizontal : 10, width : 220,}}
+            />
+
+            </View>
+       
+             {errors.password && (
+                <Text style={{fontSize : 14, color : 'red', marginTop : 4}}>
+                    {errors.firstname}
+                </Text>
+            )}
+        </View>    
+        <View style={{paddingTop : 10}}>
+            <Text style={{fontSize : 14, color : 'gray', marginBottom : 2 }}>Enter Email</Text>
+
+            <View style = {{flexDirection : 'row', alignItems : 'center', paddingVertical:12,  paddingHorizontal : 10, backgroundColor : '#f2f2f2', borderRadius : 5, borderWidth : 1, borderColor : '#f2f2f2',}}>
+                <MaterialIcons name="email" size={20} color="gray" />
                 <TextInput
                 placeholder = ''
                 value = {email}
@@ -263,27 +295,7 @@ const RegisterScreen = ({navigation}) => {
                 </Text>
             )}
         </View>
-        <View style={{paddingTop : 10}}>
-            <Text style={{fontSize : 14, color : 'gray', marginBottom : 2 }}>Firstname</Text>
-
-            <View style = {{flexDirection : 'row', alignItems : 'center', paddingVertical:12,  paddingHorizontal : 10, backgroundColor : '#f2f2f2', borderRadius : 5, borderWidth : 1, borderColor : '#f2f2f2',}}>
-                <MaterialIcons name="email" size={20} color="gray" />
-                <TextInput
-                placeholder = ''
-                placeholderTextColor = 'lightgray'
-                value = {firstname}
-                onChangeText = {e => setFirstname(e)}
-                style={{fontSize : 16, color : 'gray', marginHorizontal : 10, width : 220,}}
-            />
-
-            </View>
-       
-             {errors.password && (
-                <Text style={{fontSize : 14, color : 'red', marginTop : 4}}>
-                    {errors.firstname}
-                </Text>
-            )}
-        </View>
+      
         
         <View style={{paddingTop : 10}}>
             <Text style={{fontSize : 14, color : 'gray', marginBottom : 2 }}>Enter Password</Text>
