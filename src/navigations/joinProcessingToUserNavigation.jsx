@@ -13,7 +13,7 @@ import Loading from '../components/loading/index.jsx';
 
 const JoinProcessingToUserNavigation = () => {
 
-const { user }= useContext(AuthContext);
+const { user, registered, setRegistered }= useContext(AuthContext);
 
 const [isLoading, setIsLoading] = useState(true);
 const [userData, setUserData] = useState('')
@@ -25,9 +25,21 @@ const getApplicant = async() => {
     
     if (docSnap.exists()) {
 
+        try{
+
+          docSnap.data().registered ? setRegistered(docSnap.data().registered) : setRegistered(false)
+
+        }catch (error) {
+
+          console.log(error);
+
+        }
+
       // console.log("Document data:", docSnap.data());
-      setUserData(docSnap.data())
+      // setUserData(docSnap.data())
       setIsLoading(false)
+
+
       
     } else {
       // doc.data() will be undefined in this case
@@ -42,7 +54,7 @@ useEffect(()=>{
 
 }, [])
 
-console.log('registered:', userData.registered)
+// console.log('registered:', userData.registered)
 
 
 
@@ -51,7 +63,7 @@ console.log('registered:', userData.registered)
         <>
 
             {
-               isLoading ? <Loading/> : userData.registered ? <UserLoggedInNavigation /> :  <ProcessingNavigation />  
+               isLoading ? <Loading/> : registered ? <UserLoggedInNavigation /> :  <ProcessingNavigation />  
             }
             
            

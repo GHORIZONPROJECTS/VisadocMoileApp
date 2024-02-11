@@ -23,7 +23,7 @@ export default function PaymentSuccessfulScreen({ navigation }) {
     const [visaData, setVisaData] = useState({})
     const [loading, setLoading] = useState(false)
   
-    const { user } = useContext(AuthContext)
+    const { user, registered, setRegistered } = useContext(AuthContext)
   
     const {visaId} = useContext(VisaContext)
   
@@ -50,17 +50,58 @@ const onSubmit= async() => {
 
   setUploading(true)
 
-  await updateDoc(doc(db, "travellers", user.uid), {
+  try {
 
-      registered : true,
-      timeStamp: serverTimestamp(),
+        await updateDoc(doc(db, "travellers", user.uid), {
 
-    });
+          registered : true,
+          timeStamp: serverTimestamp(),
 
-   
-   setUploading(false)
 
-  navigation.navigate("HomeScreen", )
+        }).then(async() => {
+
+          const docRef = doc(db, "travellers", user.uid);
+          const docSnap = await getDoc(docRef);
+          
+          if (docSnap.exists()) {
+
+              try{
+
+                docSnap.data().registered ? setRegistered(docSnap.data().registered) : setRegistered(false)
+
+              }catch (error) {
+
+                console.log(error);
+
+              }
+
+            // console.log("Document data:", docSnap.data());
+            // setUserData(docSnap.data())
+            // setIsLoading(false)
+
+
+            
+          } else {
+            // doc.data() will be undefined in this case
+            console.log("No such document!");
+            // setIsLoading(false)
+          }
+
+
+        })
+
+        // setRegistered()
+        setUploading(false)
+    
+  } catch (error) {
+
+      console.log(error)
+    
+  }
+
+
+
+  // navigation.navigate("HomeScreen", )
 
   } 
 
