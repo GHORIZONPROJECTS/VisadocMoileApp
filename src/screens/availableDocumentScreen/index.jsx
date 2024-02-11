@@ -14,10 +14,13 @@ import { AuthContext } from '../../config/AuthContext'
 import Loader from '../../components/loader'
 import { doc, getDoc, setDoc, serverTimestamp, updateDoc  } from "firebase/firestore";
 import { InternationalPassportData, marriageCertificateData, birthCertificateData, passportPhotographData, statementOfAccountData, schoolCredentialsData, companyIntroductionData, selfIntroductionData, leaveApprovalLetterData, employmentLetterData } from "../../data";
+import { VisaContext } from "../../config/VisaContext";
 
 
 export default function AvailableDocumentScreen({ navigation }) {
 
+  const [userData, setUserData] = useState({});
+  const [visaData, setVisaData] = useState({});
   const [internationalPassport, setInternationalPassport] = useState(null);
   const [passportPhotograph, setPassportPhotograph] = useState(null);
   const [statementOfAccount, setStatementOfAccount] = useState(null);
@@ -72,129 +75,249 @@ export default function AvailableDocumentScreen({ navigation }) {
 
       const { user } = useContext(AuthContext)
 
+      const {visaId} = useContext(VisaContext)
+
       console.log(user.uid)
+
+
+      // Fetch user Information
     
     
-      // const getUser = async() => {
-      //   const docRef = doc(db, "travellers", user.uid);
-      //     const docSnap = await getDoc(docRef);
+      const getUser = async() => {
+        const docRef = doc(db, "travellers", user.uid);
+          const docSnap = await getDoc(docRef);
           
-      //     if (docSnap.exists()) {
+          if (docSnap.exists()) {
     
-      //       setUserData(docSnap.data())
+            setUserData(docSnap.data())
             
-      //     } else {
+          } else {
     
-      //       console.log("No such document!");
-      //     }
-      // }
+            console.log("No such document!");
+          }
+      }
     
-      // useEffect(()=>{
-      //   getUser()
-      // }, [])
+      useEffect(()=>{
+        getUser()
+      }, [])
+
+      //fetch visa information
+
+
+      const getVisa = async() => {
+        const docRef = doc(db, "visa", visaId);
+          const docSnap = await getDoc(docRef);
+          
+          if (docSnap.exists()) {
     
-      // console.log(userData)
+            setVisaData(docSnap.data())
+            
+          } else {
+    
+            console.log("No such document!");
+          }
+      }
+    
+      useEffect(()=>{
+
+        getVisa()
+
+      }, [])
+
+      console.log(visaData.travelPurpose)
+      
     
 
     const handleDocuments = async() => {
 
-      if(internationalPassport === null){
+      if(visaData.travelPurpose === "Tourism"){
 
-        return setErrorInternational('Please choose an option');
+        if(internationalPassport === null){
+
+          return setErrorInternational('Please choose an option');
+  
+        }
+  
+        if(passportPhotograph === null){
+  
+          return setErrorPhotograph('Please choose an option');
+          
+        }
+  
+        if(statementOfAccount === null){
+  
+          return setErrorStatement('Please choose an option');
+          
+        }
+  
+        if(birthCertificate === null){
+  
+          return setErrorBirth('Please choose an option');
+          
+        }
+  
+        if(marriageCertificate === null){
+  
+          return setErrorMarriage('Please choose an option');
+          
+        }
+
+        if(companyIntroduction === null){
+
+          return setErrorCompany('Please choose an option');
+          
+        }
+
+        if(selfIntroduction === null){
+
+          return setErrorSelf('Please choose an option');
+          
+        }
+
+        if(leaveApprovalLetter === null){
+
+          return setErrorLeave('Please choose an option');
+          
+        }
+
+        if(employmentLetter === null){
+
+          return setErrorEmployment('Please choose an option');
+          
+        }
+  
 
       }
 
-      if(passportPhotograph === null){
 
-        return setErrorPhotograph('Please choose an option');
+      if(visaData.travelPurpose === "Study"){
         
+          if(internationalPassport === null){
+
+            return setErrorInternational('Please choose an option');
+    
+          }
+    
+          if(passportPhotograph === null){
+    
+            return setErrorPhotograph('Please choose an option');
+            
+          }
+    
+          if(statementOfAccount === null){
+    
+            return setErrorStatement('Please choose an option');
+            
+          }
+    
+          if(birthCertificate === null){
+    
+            return setErrorBirth('Please choose an option');
+            
+          }
+    
+          if(marriageCertificate === null){
+    
+            return setErrorMarriage('Please choose an option');
+            
+          }
+
+          
+          if(schoolCredentials === null){
+    
+            return setErrorSchool('Please choose an option');
+            
+          }
+    
+  
+     
       }
 
-      if(statementOfAccount === null){
+    
 
-        return setErrorStatement('Please choose an option');
-        
-      }
-
-      if(birthCertificate === null){
-
-        return setErrorBirth('Please choose an option');
-        
-      }
-
-      if(marriageCertificate === null){
-
-        return setErrorMarriage('Please choose an option');
-        
-      }
-
-      if(schoolCredentials === null){
-
-        return setErrorSchool('Please choose an option');
-        
-      }
-
-      if(companyIntroduction === null){
-
-        return setErrorCompany('Please choose an option');
-        
-      }
-
-      if(selfIntroduction === null){
-
-        return setErrorSelf('Please choose an option');
-        
-      }
-
-      if(leaveApprovalLetter === null){
-
-        return setErrorLeave('Please choose an option');
-        
-      }
-
-      if(employmentLetter === null){
-
-        return setErrorEmployment('Please choose an option');
-        
-      }
 
     //     if(internationalPassport !== null){
 
-        try {
 
-          setLoading(true)
-
-           await updateDoc(doc(db, "travellers", user.uid), {
-        
-       internationalPassport : internationalPassport,
-       passportPhotograph : passportPhotograph,
-       statementOfAccount : statementOfAccount,
-       birthCertificate : birthCertificate, 
-       marriageCertificate : marriageCertificate,
-       schoolCredentials : schoolCredentials,
-       companyIntroduction : companyIntroduction , 
-       selfIntroduction : selfIntroduction,
-       leaveApprovalLetter : leaveApprovalLetter,
-       employmentLetter : employmentLetter,
-       timeStamp: serverTimestamp(),
-        
-
-    }).then(() => {
-      setLoading(false)
-      // showToast()
-      // if (condition) {
-        
-      // } else {
-        
-      // }
-      navigation.navigate("UserInformationScreen");
-        
-    })
-  
           
-        } catch (error) {
-          console.log('error:',error.message)
-        }
+
+          if(visaData.travelPurpose === "Tourism"){
+
+            setLoading(true)
+
+            try {
+
+              await updateDoc(doc(db, "visa", visaId), {
+        
+                internationalPassport : internationalPassport,
+                passportPhotograph : passportPhotograph,
+                statementOfAccount : statementOfAccount,
+                birthCertificate : birthCertificate, 
+                marriageCertificate : marriageCertificate,
+                companyIntroduction : companyIntroduction , 
+                selfIntroduction : selfIntroduction,
+                leaveApprovalLetter : leaveApprovalLetter,
+                employmentLetter : employmentLetter,
+                timeStamp: serverTimestamp(),
+            
+    
+                }).then(() => {
+
+                  setLoading(false)
+                  
+                  navigation.navigate("UserInformationScreen");
+                    
+                })
+              
+            } catch (error) {
+
+              console.log('error:',error.message)
+              
+            }
+
+          
+
+          }
+
+          if(visaData.travelPurpose === "Study"){
+
+            setLoading(true)
+
+            try {
+              
+              await updateDoc(doc(db, "visa", visaId), {
+        
+                internationalPassport : internationalPassport,
+                passportPhotograph : passportPhotograph,
+                statementOfAccount : statementOfAccount,
+                birthCertificate : birthCertificate, 
+                marriageCertificate : marriageCertificate,
+                schoolCredentials : schoolCredentials,
+                timeStamp: serverTimestamp(),
+            
+    
+                }).then(() => {
+
+                  setLoading(false)
+                  
+                  navigation.navigate("UserInformationScreen");
+                    
+                })
+
+            } catch (error) {
+
+              console.log('error:',error.message)
+              
+            }
+
+     
+
+          }
+
+          
+          
+          
+       
 
        
     //   }else{
@@ -229,7 +352,7 @@ export default function AvailableDocumentScreen({ navigation }) {
       <View style={{marginBottom:20}}>
 
         <Text style={{fontSize:16, marginBottom:5}}>1. Scanned International Passport Data Page</Text>
-       
+        
         {InternationalPassportData.map(item => {
           return (
             <View key= {item.value} style={{flexDirection: 'column', justifyContent:'flex-start', marginVertical:10}}>
@@ -284,53 +407,53 @@ export default function AvailableDocumentScreen({ navigation }) {
 
      <View style={{marginBottom:20}}>
 
-<Text style={{fontSize:16, marginBottom:5}}>2. White/Colored Passport Photograph</Text>
+      <Text style={{fontSize:16, marginBottom:5}}>2. White/Colored Passport Photograph</Text>
 
-{passportPhotographData.map(item => {
-  return (
-    <View key= {item.value} style={{flexDirection: 'column', justifyContent:'flex-start', marginVertical:10}}>
+      {passportPhotographData.map(item => {
+        return (
+          <View key= {item.value} style={{flexDirection: 'column', justifyContent:'flex-start', marginVertical:10}}>
 
-        <View style={{flexDirection:'row', alignItems:'center'}}>
+              <View style={{flexDirection:'row', alignItems:'center'}}>
 
-        <Pressable key= {item.value} onPress={() => setPassportPhotograph(item.value)} style={{
-          width:30,
-          height:30,
-          flexDirection:'column',
+              <Pressable key= {item.value} onPress={() => setPassportPhotograph(item.value)} style={{
+                width:30,
+                height:30,
+                flexDirection:'column',
 
-          position:'relative',
+                position:'relative',
 
-          alignItems:'center',
-          justifyContent:'center',
-          // gap:10,
-          marginRight:10,
-          // paddingLeft:20,
-          // paddingTop:10,
-          borderWidth:1,
-          // borderRadius:10,
-          backgroundColor:'white',
-          borderColor: passportPhotograph == item.value? COLORS.main : 'lightgray',
-          position:'relative'
-    
-        }}>
-          {passportPhotograph === item.value ? <View style={styles.check}>
-            <FontAwesome name="check" size={20} color='darkblue'/>
-          </View> : null}
-        
-        </Pressable>
+                alignItems:'center',
+                justifyContent:'center',
+                // gap:10,
+                marginRight:10,
+                // paddingLeft:20,
+                // paddingTop:10,
+                borderWidth:1,
+                // borderRadius:10,
+                backgroundColor:'white',
+                borderColor: passportPhotograph == item.value? COLORS.main : 'lightgray',
+                position:'relative'
+          
+              }}>
+                {passportPhotograph === item.value ? <View style={styles.check}>
+                  <FontAwesome name="check" size={20} color='darkblue'/>
+                </View> : null}
+              
+              </Pressable>
 
-        <Text style={{
-            fontSize:13,
-            color: passportPhotograph == item.value? COLORS.main : 'black',
-          }}>
-            {item.title}
-        </Text>
+              <Text style={{
+                  fontSize:13,
+                  color: passportPhotograph == item.value? COLORS.main : 'black',
+                }}>
+                  {item.title}
+              </Text>
 
-        </View>
+              </View>
 
-    </View>
-    
-  )
-})}
+          </View>
+          
+        )
+      })}
 
       {errorPhotograph &&
           <Text style={{color:'red', fontSize:10, marginVertical:5}}> {errorPhotograph}</Text>
@@ -513,80 +636,150 @@ export default function AvailableDocumentScreen({ navigation }) {
 
      </View>
 
-     <View style={{marginBottom:20}}>
+     {visaData.travelPurpose === "Study"  &&
 
-      <Text style={{fontSize:16, marginBottom:5}}>6. School Credentials</Text>
+        <View style={{marginBottom:20}}>
 
-      {schoolCredentialsData.map(item => {
-        return (
-          <View key= {item.value} style={{flexDirection: 'column', justifyContent:'flex-start', marginVertical:10}}>
+        <Text style={{fontSize:16, marginBottom:5}}>6. School Credentials</Text>
 
-              <View style={{flexDirection:'row', alignItems:'center'}}>
+        {schoolCredentialsData.map(item => {
+          return (
+            <View key= {item.value} style={{flexDirection: 'column', justifyContent:'flex-start', marginVertical:10}}>
 
-              <Pressable key= {item.value} onPress={() => setSchoolCredentials(item.value)} style={{
-                width:30,
-                height:30,
-                flexDirection:'column',
+                <View style={{flexDirection:'row', alignItems:'center'}}>
 
-                position:'relative',
+                <Pressable key= {item.value} onPress={() => setSchoolCredentials(item.value)} style={{
+                  width:30,
+                  height:30,
+                  flexDirection:'column',
 
-                alignItems:'center',
-                justifyContent:'center',
-                // gap:10,
-                marginRight:10,
-                // paddingLeft:20,
-                // paddingTop:10,
-                borderWidth:1,
-                // borderRadius:10,
-                backgroundColor:'white',
-                borderColor: schoolCredentials == item.value? COLORS.main : 'lightgray',
-                position:'relative'
-          
-              }}>
-                {schoolCredentials === item.value ? <View style={styles.check}>
-                  <FontAwesome name="check" size={20} color='darkblue'/>
-                </View> : null}
-              
-              </Pressable>
+                  position:'relative',
 
-              <Text style={{
-                  fontSize:13,
-                  color: schoolCredentials == item.value? COLORS.main : 'black',
+                  alignItems:'center',
+                  justifyContent:'center',
+                  // gap:10,
+                  marginRight:10,
+                  // paddingLeft:20,
+                  // paddingTop:10,
+                  borderWidth:1,
+                  // borderRadius:10,
+                  backgroundColor:'white',
+                  borderColor: schoolCredentials == item.value? COLORS.main : 'lightgray',
+                  position:'relative'
+            
                 }}>
-                  {item.title}
-              </Text>
+                  {schoolCredentials === item.value ? <View style={styles.check}>
+                    <FontAwesome name="check" size={20} color='darkblue'/>
+                  </View> : null}
+                
+                </Pressable>
 
-              </View>
+                <Text style={{
+                    fontSize:13,
+                    color: schoolCredentials == item.value? COLORS.main : 'black',
+                  }}>
+                    {item.title}
+                </Text>
 
-          </View>
-          
-        )
-      })}
+                </View>
 
-      {errorSchool &&
-          
-          <Text style={{color:'red', fontSize:10, marginVertical:5}}> {errorSchool}</Text>
-      }
+            </View>
+            
+          )
+        })}
 
-     </View>
+        {errorSchool &&
+            
+            <Text style={{color:'red', fontSize:10, marginVertical:5}}> {errorSchool}</Text>
+        }
 
-    <View style={{marginBottom:20}}>
+        </View>
+     
+     }
 
-          <Text style={{fontSize:16, marginBottom:5}}>7. Company Introduction Letter </Text>
+     
 
-          {companyIntroductionData.map(item => {
+     {visaData.travelPurpose === "Tourism"  && 
+
+
+        <View style={{marginBottom:20}}>
+
+        <Text style={{fontSize:16, marginBottom:5}}>6. Company Introduction Letter </Text>
+
+        {companyIntroductionData.map(item => {
+          return (
+            <View key= {item.value} style={{flexDirection: 'column', justifyContent:'flex-start', marginVertical:10}}>
+
+                <View style={{flexDirection:'row', alignItems:'center'}}>
+
+                <Pressable key= {item.value} onPress={() => setCompanyIntroduction(item.value)} style={{
+                  width:30,
+                  height:30,
+                  flexDirection:'column',
+
+                  position:'relative',
+
+                  alignItems:'center',
+                  justifyContent:'center',
+                  // gap:10,
+                  marginRight:10,
+                  // paddingLeft:20,
+                  // paddingTop:10,
+                  borderWidth:1,
+                  // borderRadius:10,
+                  backgroundColor:'white',
+                  borderColor: companyIntroduction == item.value? COLORS.main : 'lightgray',
+                  position:'relative'
+            
+                }}>
+                  {companyIntroduction === item.value ? <View style={styles.check}>
+                    <FontAwesome name="check" size={20} color='darkblue'/>
+                  </View> : null}
+                
+                </Pressable>
+
+                <Text style={{
+                    fontSize:13,
+                    color: companyIntroduction == item.value? COLORS.main : 'black',
+                  }}>
+                    {item.title}
+                </Text>
+
+                </View>
+
+            </View>
+            
+          )
+        })}
+
+        {errorCompany &&
+        <Text style={{color:'red', fontSize:10, marginVertical:5}}> {errorCompany}</Text>
+        }
+
+        </View>   
+
+     
+     }
+
+     {visaData.travelPurpose === "Tourism" &&
+     
+          <View style={{marginBottom:20}}>
+
+          <Text style={{fontSize:16, marginBottom:5}}>7. Self Introductory Letter </Text>
+      
+          {selfIntroductionData.map(item => {
             return (
               <View key= {item.value} style={{flexDirection: 'column', justifyContent:'flex-start', marginVertical:10}}>
-
+      
                   <View style={{flexDirection:'row', alignItems:'center'}}>
-
-                  <Pressable key= {item.value} onPress={() => setCompanyIntroduction(item.value)} style={{
+      
+                  <Pressable key= {item.value} onPress={() => setSelfIntroduction(item.value)} style={{
                     width:30,
                     height:30,
                     flexDirection:'column',
-
+      
                     position:'relative',
-
+      
                     alignItems:'center',
                     justifyContent:'center',
                     // gap:10,
@@ -596,203 +789,161 @@ export default function AvailableDocumentScreen({ navigation }) {
                     borderWidth:1,
                     // borderRadius:10,
                     backgroundColor:'white',
-                    borderColor: companyIntroduction == item.value? COLORS.main : 'lightgray',
+                    borderColor: selfIntroduction == item.value? COLORS.main : 'lightgray',
                     position:'relative'
               
                   }}>
-                    {companyIntroduction === item.value ? <View style={styles.check}>
+                    {selfIntroduction === item.value ? <View style={styles.check}>
                       <FontAwesome name="check" size={20} color='darkblue'/>
                     </View> : null}
                   
                   </Pressable>
-
+      
                   <Text style={{
                       fontSize:13,
-                      color: companyIntroduction == item.value? COLORS.main : 'black',
+                      color: selfIntroduction === item.value? COLORS.main : 'black',
                     }}>
                       {item.title}
                   </Text>
-
+      
                   </View>
-
+      
               </View>
               
             )
           })}
+      
+          {errorSelf &&
+                <Text style={{color:'red', fontSize:10, marginVertical:5}}> {errorSelf}</Text>
+          }
+      
+          </View>
+     
+     }
 
-        {errorCompany &&
-          <Text style={{color:'red', fontSize:10, marginVertical:5}}> {errorCompany}</Text>
+    
+
+    {visaData.travelPurpose === "Tourism" &&
+    
+        <View style={{marginBottom:20}}>
+
+        <Text style={{fontSize:16, marginBottom:5}}>8. Leave Approval Letter </Text>
+
+        {leaveApprovalLetterData.map(item => {
+          return (
+            <View key= {item.value} style={{flexDirection: 'column', justifyContent:'flex-start', marginVertical:10}}>
+
+                <View style={{flexDirection:'row', alignItems:'center'}}>
+
+                <Pressable key= {item.value} onPress={() => setLeaveApprovalLetter(item.value)} style={{
+                  width:30,
+                  height:30,
+                  flexDirection:'column',
+
+                  position:'relative',
+
+                  alignItems:'center',
+                  justifyContent:'center',
+                  // gap:10,
+                  marginRight:10,
+                  // paddingLeft:20,
+                  // paddingTop:10,
+                  borderWidth:1,
+                  // borderRadius:10,
+                  backgroundColor:'white',
+                  borderColor: leaveApprovalLetter == item.value? COLORS.main : 'lightgray',
+                  position:'relative'
+            
+                }}>
+                  {leaveApprovalLetter === item.value ? <View style={styles.check}>
+                    <FontAwesome name="check" size={20} color='darkblue'/>
+                  </View> : null}
+                
+                </Pressable>
+
+                <Text style={{
+                    fontSize:13,
+                    color: leaveApprovalLetter == item.value? COLORS.main : 'black',
+                  }}>
+                    {item.title}
+                </Text>
+
+                </View>
+
+            </View>
+            
+          )
+        })}
+
+        {errorLeave &&
+              <Text style={{color:'red', fontSize:10, marginVertical:5}}> {errorLeave}</Text>
         }
 
-    </View>   
-
-    <View style={{marginBottom:20}}>
-
-    <Text style={{fontSize:16, marginBottom:5}}>8. Self Introductory Letter </Text>
-
-    {selfIntroductionData.map(item => {
-      return (
-        <View key= {item.value} style={{flexDirection: 'column', justifyContent:'flex-start', marginVertical:10}}>
-
-            <View style={{flexDirection:'row', alignItems:'center'}}>
-
-            <Pressable key= {item.value} onPress={() => setSelfIntroduction(item.value)} style={{
-              width:30,
-              height:30,
-              flexDirection:'column',
-
-              position:'relative',
-
-              alignItems:'center',
-              justifyContent:'center',
-              // gap:10,
-              marginRight:10,
-              // paddingLeft:20,
-              // paddingTop:10,
-              borderWidth:1,
-              // borderRadius:10,
-              backgroundColor:'white',
-              borderColor: selfIntroduction == item.value? COLORS.main : 'lightgray',
-              position:'relative'
-        
-            }}>
-              {selfIntroduction === item.value ? <View style={styles.check}>
-                <FontAwesome name="check" size={20} color='darkblue'/>
-              </View> : null}
-            
-            </Pressable>
-
-            <Text style={{
-                fontSize:13,
-                color: selfIntroduction == item.value? COLORS.main : 'black',
-              }}>
-                {item.title}
-            </Text>
-
-            </View>
-
-        </View>
-        
-      )
-    })}
-
-    {errorSelf &&
-          <Text style={{color:'red', fontSize:10, marginVertical:5}}> {errorSelf}</Text>
+        </View> 
+    
     }
 
-    </View>
+     {visaData.travelPurpose === "Tourism" && 
+     
+        <View style={{marginBottom:20}}>
 
-    <View style={{marginBottom:20}}>
+        <Text style={{fontSize:16, marginBottom:5}}>9. Employment Letter </Text>
 
-    <Text style={{fontSize:16, marginBottom:5}}>9. Leave Approval Letter </Text>
+        {employmentLetterData.map(item => {
+          return (
+            <View key= {item.value} style={{flexDirection: 'column', justifyContent:'flex-start', marginVertical:10}}>
 
-    {leaveApprovalLetterData.map(item => {
-      return (
-        <View key= {item.value} style={{flexDirection: 'column', justifyContent:'flex-start', marginVertical:10}}>
+                <View style={{flexDirection:'row', alignItems:'center'}}>
 
-            <View style={{flexDirection:'row', alignItems:'center'}}>
+                <Pressable key= {item.value} onPress={() => setEmploymentLetter(item.value)} style={{
+                  width:30,
+                  height:30,
+                  flexDirection:'column',
 
-            <Pressable key= {item.value} onPress={() => setLeaveApprovalLetter(item.value)} style={{
-              width:30,
-              height:30,
-              flexDirection:'column',
+                  position:'relative',
 
-              position:'relative',
-
-              alignItems:'center',
-              justifyContent:'center',
-              // gap:10,
-              marginRight:10,
-              // paddingLeft:20,
-              // paddingTop:10,
-              borderWidth:1,
-              // borderRadius:10,
-              backgroundColor:'white',
-              borderColor: leaveApprovalLetter == item.value? COLORS.main : 'lightgray',
-              position:'relative'
-        
-            }}>
-              {leaveApprovalLetter === item.value ? <View style={styles.check}>
-                <FontAwesome name="check" size={20} color='darkblue'/>
-              </View> : null}
+                  alignItems:'center',
+                  justifyContent:'center',
+                  // gap:10,
+                  marginRight:10,
+                  // paddingLeft:20,
+                  // paddingTop:10,
+                  borderWidth:1,
+                  // borderRadius:10,
+                  backgroundColor:'white',
+                  borderColor: employmentLetter == item.value? COLORS.main : 'lightgray',
+                  position:'relative'
             
-            </Pressable>
-
-            <Text style={{
-                fontSize:13,
-                color: leaveApprovalLetter == item.value? COLORS.main : 'black',
-              }}>
-                {item.title}
-            </Text>
-
-            </View>
-
-        </View>
-        
-      )
-    })}
-
-    {errorLeave &&
-          <Text style={{color:'red', fontSize:10, marginVertical:5}}> {errorLeave}</Text>
-    }
-
-    </View>  
-
-    <View style={{marginBottom:20}}>
-
-      <Text style={{fontSize:16, marginBottom:5}}>10. Employment Letter </Text>
-
-      {employmentLetterData.map(item => {
-        return (
-          <View key= {item.value} style={{flexDirection: 'column', justifyContent:'flex-start', marginVertical:10}}>
-
-              <View style={{flexDirection:'row', alignItems:'center'}}>
-
-              <Pressable key= {item.value} onPress={() => setEmploymentLetter(item.value)} style={{
-                width:30,
-                height:30,
-                flexDirection:'column',
-
-                position:'relative',
-
-                alignItems:'center',
-                justifyContent:'center',
-                // gap:10,
-                marginRight:10,
-                // paddingLeft:20,
-                // paddingTop:10,
-                borderWidth:1,
-                // borderRadius:10,
-                backgroundColor:'white',
-                borderColor: employmentLetter == item.value? COLORS.main : 'lightgray',
-                position:'relative'
-          
-              }}>
-                {employmentLetter === item.value ? <View style={styles.check}>
-                  <FontAwesome name="check" size={20} color='darkblue'/>
-                </View> : null}
-              
-              </Pressable>
-
-              <Text style={{
-                  fontSize:13,
-                  color: employmentLetter == item.value? COLORS.main : 'black',
                 }}>
-                  {item.title}
-              </Text>
+                  {employmentLetter === item.value ? <View style={styles.check}>
+                    <FontAwesome name="check" size={20} color='darkblue'/>
+                  </View> : null}
+                
+                </Pressable>
 
-              </View>
+                <Text style={{
+                    fontSize:13,
+                    color: employmentLetter == item.value? COLORS.main : 'black',
+                  }}>
+                    {item.title}
+                </Text>
 
-          </View>
-          
-        )
-      })}
+                </View>
 
-      {errorEmployment &&
-          <Text style={{color:'red', fontSize:10, marginVertical:5}}> {errorEmployment}</Text>
-      }
+            </View>
+            
+          )
+        })}
 
-      </View>  
+        {errorEmployment &&
+            <Text style={{color:'red', fontSize:10, marginVertical:5}}> {errorEmployment}</Text>
+        }
+
+      </View> 
+
+     }
+
+   
 
      </View>
     </ScrollView>

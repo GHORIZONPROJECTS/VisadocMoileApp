@@ -16,6 +16,7 @@ import Loader from '../../components/loader'
 import { doc, getDoc, setDoc, serverTimestamp, updateDoc  } from "firebase/firestore";
 import { EmploymentStatusData, MaritalStatusData, birthCertificateData, fatherData, motherData } from "../../data";
 import { TouchableOpacity } from "react-native-gesture-handler";
+import { VisaContext } from "../../config/VisaContext";
 
 export default function DocumentsAvailableScreen({ navigation }) {
   
@@ -25,11 +26,13 @@ export default function DocumentsAvailableScreen({ navigation }) {
 
       const { user } = useContext(AuthContext)
 
+      const {visaId} = useContext(VisaContext)
+
       console.log(user.uid)
 
     
-      const getUser = async() => {
-        const docRef = doc(db, "travellers", user.uid);
+      const getVisaData = async() => {
+        const docRef = doc(db, "visa", visaId);
           const docSnap = await getDoc(docRef);
           
           if (docSnap.exists()) {
@@ -43,7 +46,7 @@ export default function DocumentsAvailableScreen({ navigation }) {
       }
     
       useEffect(()=>{
-        getUser()
+        getVisaData()
       }, [])
     
       console.log(visaData.birthCertificate)
@@ -66,7 +69,7 @@ export default function DocumentsAvailableScreen({ navigation }) {
     //     return setErrorMessage('Please choose an option');
         
     //   }
-    navigation.navigate("CardPaymentScreen");
+    navigation.navigate("ServiceChargeScreen");
 
     //     try {
 
@@ -142,7 +145,9 @@ export default function DocumentsAvailableScreen({ navigation }) {
                       {/* {visaData.birthCertificate && <Text style={{marginHorizontal:5, color:'green'}}>saved</Text>} */}
                       </View>
                       
-                      <TouchableOpacity style={{ 
+                      <TouchableOpacity 
+                        onPress={() => navigation.navigate("InternationalPassportImageScreen", {internationalPassport : visaData.internationalPassport})}
+                        style={{ 
                           alignItems:'center', 
                           flexDirection:'row', 
                           padding:10, 
@@ -177,7 +182,9 @@ export default function DocumentsAvailableScreen({ navigation }) {
                 {/* {visaData.birthCertificate && <Text style={{marginHorizontal:5, color:'green'}}>saved</Text>} */}
                 </View>
                 
-                <TouchableOpacity style={{ 
+                <TouchableOpacity 
+                onPress={() => navigation.navigate("BirthCertificateImageScreen", {birthCertificate : visaData.birthCertificate})}
+                style={{ 
                     alignItems:'center', 
                     flexDirection:'row', 
                     padding:10, 
@@ -212,7 +219,9 @@ export default function DocumentsAvailableScreen({ navigation }) {
                   {/* {visaData.birthCertificate && <Text style={{marginHorizontal:5, color:'green'}}>saved</Text>} */}
                   </View>
                   
-                  <TouchableOpacity style={{ 
+                  <TouchableOpacity 
+                  onPress={() => navigation.navigate("LeaveApprovalLetterImageScreen")}
+                  style={{ 
                       alignItems:'center', 
                       flexDirection:'row', 
                       padding:10, 
@@ -247,7 +256,9 @@ export default function DocumentsAvailableScreen({ navigation }) {
                       {/* {visaData.marriageCertificate && <Text style={{marginHorizontal:5, color:'green'}}>saved</Text>} */}
                       </View>
                       
-                      <TouchableOpacity style={{ 
+                      <TouchableOpacity 
+                      onPress={() => navigation.navigate("MarriageCertificateImageScreen")}
+                      style={{ 
                           alignItems:'center', 
                           flexDirection:'row', 
                           padding:10, 
@@ -282,7 +293,9 @@ export default function DocumentsAvailableScreen({ navigation }) {
                       {/* {visaData.marriageCertificate && <Text style={{marginHorizontal:5, color:'green'}}>saved</Text>} */}
                       </View>
                       
-                      <TouchableOpacity style={{ 
+                      <TouchableOpacity 
+                      onPress={() => navigation.navigate("PassportPhotographImageScreen")}
+                      style={{ 
                           alignItems:'center', 
                           flexDirection:'row', 
                           padding:10, 
@@ -317,7 +330,9 @@ export default function DocumentsAvailableScreen({ navigation }) {
                     {/* {visaData.marriageCertificate && <Text style={{marginHorizontal:5, color:'green'}}>saved</Text>} */}
                     </View>
                     
-                    <TouchableOpacity style={{ 
+                    <TouchableOpacity 
+                    onPress={() => navigation.navigate("SchoolCredentialsImageScreen")}
+                    style={{ 
                         alignItems:'center', 
                         flexDirection:'row', 
                         padding:10, 
@@ -351,7 +366,9 @@ export default function DocumentsAvailableScreen({ navigation }) {
                     {/* {visaData.marriageCertificate && <Text style={{marginHorizontal:5, color:'green'}}>saved</Text>} */}
                     </View>
                     
-                    <TouchableOpacity style={{ 
+                    <TouchableOpacity 
+                    onPress={() => navigation.navigate("SelfIntroductionImageScreen")}
+                    style={{ 
                         alignItems:'center', 
                         flexDirection:'row', 
                         padding:10, 
@@ -385,7 +402,9 @@ export default function DocumentsAvailableScreen({ navigation }) {
                     {/* {visaData.marriageCertificate && <Text style={{marginHorizontal:5, color:'green'}}>saved</Text>} */}
                     </View>
                     
-                    <TouchableOpacity style={{ 
+                    <TouchableOpacity 
+                    onPress={() => navigation.navigate("StatementOfAccountImageScreen")}
+                    style={{ 
                         alignItems:'center', 
                         flexDirection:'row', 
                         padding:10, 
@@ -419,7 +438,9 @@ export default function DocumentsAvailableScreen({ navigation }) {
                     {/* {visaData.marriageCertificate && <Text style={{marginHorizontal:5, color:'green'}}>saved</Text>} */}
                     </View>
                     
-                    <TouchableOpacity style={{ 
+                    <TouchableOpacity 
+                    onPress={() => navigation.navigate("CompanyIntroductionImageScreen")}
+                    style={{ 
                         alignItems:'center', 
                         flexDirection:'row', 
                         padding:10, 
@@ -453,7 +474,9 @@ export default function DocumentsAvailableScreen({ navigation }) {
                     {/* {visaData.marriageCertificate && <Text style={{marginHorizontal:5, color:'green'}}>saved</Text>} */}
                     </View>
                     
-                    <TouchableOpacity style={{ 
+                    <TouchableOpacity 
+                    onPress={() => navigation.navigate("EmploymentLetterImageScreen")}
+                    style={{ 
                         alignItems:'center', 
                         flexDirection:'row', 
                         padding:10, 

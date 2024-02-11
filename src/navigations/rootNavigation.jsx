@@ -3,9 +3,9 @@ import { NavigationContainer } from "@react-navigation/native";
 import AuthNavigation from "./authNavigation";
 import {auth} from '../firebase';
 import { AuthContext } from '../config/AuthContext';
-import ApplicationScreen from '../screens/applicationScreen';
-import ProcessingNavigation from './processingNavigation';
 import { Provider as PaperProvider } from 'react-native-paper';
+import JoinProcessingToUserNavigation from './joinProcessingToUserNavigation';
+import Loading from '../components/loading';
 
 const RootNavigation = () => {
 
@@ -22,23 +22,28 @@ const RootNavigation = () => {
           } catch (error) {
             console.log(error);
           }
+
+          setIsLoading(false)
         });
     
         // unsubscribe auth listener on unmount
         return unsubscribeAuth;
+        
       }, []);
+
+      console.log(user)
 
     return (
 
 
       <PaperProvider>
+
         <NavigationContainer>
 
-            {user ? <ProcessingNavigation /> : <AuthNavigation />} 
-
-            {/* <AuthNavigation/> */}
+            {isLoading ? <Loading/> : user ? < JoinProcessingToUserNavigation />  : <AuthNavigation />}
 
         </NavigationContainer>
+
       </PaperProvider>
 
     )

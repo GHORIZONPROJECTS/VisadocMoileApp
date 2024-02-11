@@ -4,8 +4,9 @@ import { SafeAreaView } from 'react-native-safe-area-context'
 import { MaterialIcons, Ionicons } from '@expo/vector-icons';
 import { auth, db } from '../../firebase';
 import {serverTimestamp, setDoc, doc, getDoc } from "firebase/firestore";
-import { createUserWithEmailAndPassword, sendEmailVerification } from 'firebase/auth';
+import { createUserWithEmailAndPassword, sendEmailVerification, updateProfile, sendSignInLinkToEmail, signOut  } from 'firebase/auth';
 import Loader from '../../components/loader';
+import Toast from '../../components/toast';
 
 
 const RegisterScreen = ({navigation}) => {
@@ -23,6 +24,8 @@ const RegisterScreen = ({navigation}) => {
   const [confirmPassword, setConfirmPassword] = useState('')
 
   const [loading, setLoading ] = useState(false)
+
+  const [toast, setToast ] = useState(false)
 
   
   const [hidePassword, setHidePassword] = useState(false)
@@ -106,61 +109,163 @@ const RegisterScreen = ({navigation}) => {
 
         setShowErrors(false)
         
-        console.log('sign up')
+        // console.log('sign up')
 
         handleSignUp(email, password)
     }
 
   } 
 
-  const handleSignUp = (email, password) => {
+  const actionCodeSettings = {
+    // URL you want to redirect back to. The domain (www.example.com) for this
+    // URL must be in the authorized domains list in the Firebase Console.
+    // url: 'https://www.example.com/finishSignUp?cartId=1234',
+    // This must be true.
+    handleCodeInApp: true,
+    iOS: {
+      bundleId: 'com.visadocflymate.visadoc'
+    },
+    android: {
+      packageName: 'com.visadocflymate.visadoc',
+      installApp: true,
+      minimumVersion: '12'
+    },
+   
+  };
+
+//   const handleSignUp = (email, password) => {
+
+//     setLoading(true);
+
+//     createUserWithEmailAndPassword(auth, email, password)
+
+
+
+//     sendSignInLinkToEmail(auth, email, actionCodeSettings)
+
+//     .then((userCredential) => {
+
+//         const user = userCredential.user;
+
+//         setDoc(doc(db, "travellers", user.uid), {
+
+//             firstname: firstname,
+
+//             timeStamp: serverTimestamp(),
+        
+//             }
+//         );
+
+
+//         setToast(true)
+//         // The link was successfully sent. Inform the user.
+//         // Save the email locally so you don't need to ask the user for it again
+//         // if they open the link on the same device.
+//         window.localStorage.setItem('emailForSignIn', email);
+
+//         setLoading(false);
+
+//         // ...
+//     })
+    
+
+//     .catch((error) => {
+//         const errorCode = error.code;
+//         const errorMessage = error.message;
+//         // ...
+
+//         return false
+//     });
+
+//   }
+
+//   const handleSignUp = (email, password) => {
+
+//     try {
+//         createUserWithEmailAndPassword(auth, email, password)
+//         currentUser.email.sendEmailVerification()
+//         return true
+//       } catch (e) {
+//         console.log(e)
+//         return false
+//       }
+
+//   }
+
+
+// const handleSignUp = async(email, password) => {
+
+//     setLoading(true);
+
+//     createUserWithEmailAndPassword(auth, email, password)
+//         .then(() => {
+                
+//         sendEmailVerification(auth, {});
+//         auth.signOut();
+//         alert("Email sent");
+//         setLoading(false);
+//     })
+//     .catch(alert);
+
+
+//     // try {
+//     //     const {user} = await createUserWithEmailAndPassword(auth, email, password)
+
+//     //     await user.sendEmailVerification()
+
+//     //     return true
+
+        
+//     //     setLoading(false);
+
+//     //   } catch (e) {
+
+//     //     console.log(e)
+
+//     //     return false
+
+//     //     setLoading(false);
+
+//     //   }
+
+      
+      
+// }
+ 
+
+ const handleSignUp = (email, password) => {
 
 
     setLoading(true);
 
-    createUserWithEmailAndPassword(auth, email, password)
-
+    const user = createUserWithEmailAndPassword(auth, email, password)
+    
     .then((userCredential) => {
 
         const user = userCredential.user;
 
-         setDoc(doc(db, "travellers", user.uid), {
+        setDoc(doc(db, "travellers", user.uid), {
+
+            userId : user.uid,
 
             firstname: firstname,
 
             timeStamp: serverTimestamp(),
+
+            registered : false
         
             }
         );
 
+        // auth.signOut();
+
+        // navigation.navigate('LoginScreen')
+    
         setLoading(false)
 
+    })
 
-
-        // ToastAndroid.show('Account Created Successfully', ToastAndroid.TOP, ToastAndroid.LONG )
-        // Signed up 
-        // const user = userCredential.user;
-
-        
-            // send verification mail.
-
-            // user.sendEmailVerification();
-
-            sendEmailVerification(auth.currentUser)
-
-            auth.signOut();
-
-            Alert( 'Email sent to click the link to activate your account' );
-
-            // Alert(`Email sent to ${email} click the link to activate your account` );
-
-            // sendEmailVerification(auth.currentUser)
-            // .then(() => {
-            //     // Email verification sent!
-            //     // ...
-            // });
-
-        }).catch((error) => {
+   .catch((error) => {
 
         const errorCode = error.code;
 
@@ -197,6 +302,26 @@ const RegisterScreen = ({navigation}) => {
     });
   }
 
+// const handleSignUp = (email, password) => {
+        
+//         // Sign your user using createUserWithEmailAndPassword
+        
+//         // Provide user's email and password
+//         createUserWithEmailAndPassword(auth, email, password);
+
+//         // Send verification email.
+//         firebase.auth().currentUser.sendEmailVerification()
+
+//         let interval = setInterval(async () => {
+//             if (userCredentials.user.emailVerified) {
+//                 clearInterval(interval);
+//                 auth.signOut();
+                
+//             }
+//            await  userCredentials.user.reload();
+//         }, 2000);
+//     }
+
   const togglePassword = () => {
 
     setHidePassword(!hidePassword)
@@ -214,7 +339,9 @@ const RegisterScreen = ({navigation}) => {
   return (
     <View style={styles.loginContainer}>
 
-    <Loader visible = {loading} />    
+    <Loader visible = {loading} />   
+
+    <Toast show = {toast} /> 
 
     <SafeAreaView style = {{paddingHorizontal : 20}}>
 
@@ -262,6 +389,7 @@ const RegisterScreen = ({navigation}) => {
                 placeholder = ''
                 placeholderTextColor = 'lightgray'
                 value = {firstname}
+                selectionColor="gray"
                 onChangeText = {e => setFirstname(e)}
                 style={{fontSize : 16, color : 'gray', marginHorizontal : 10, width : 220,}}
             />
@@ -282,6 +410,7 @@ const RegisterScreen = ({navigation}) => {
                 <TextInput
                 placeholder = ''
                 value = {email}
+                selectionColor="gray"
                 placeholderTextColor = 'lightgray'
                 onChangeText = {e => setEmail(e)}
                 style={{fontSize : 16, color : 'gray', marginHorizontal : 10, width : 220,}}
@@ -307,6 +436,7 @@ const RegisterScreen = ({navigation}) => {
             <TextInput
                 placeholder = ''
                 value = {password}
+                selectionColor="gray"
                 onChangeText = {e => setPassword(e)}
                 secureTextEntry = {hidePassword ? false : true}
                 style={{ width : 200, fontSize : 16, color : 'gray'}}
@@ -330,6 +460,7 @@ const RegisterScreen = ({navigation}) => {
             <TextInput
                 placeholder = ''
                 value = {confirmPassword}
+                selectionColor="gray"
                 onChangeText = {e => setConfirmPassword(e)}
                 secureTextEntry = {hideConfirmPassword ? false : true}
                 style={{ width : 200, fontSize : 16, color : 'gray'}}

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useContext } from "react";
-import { Text, View, StyleSheet, Alert, Pressable, Image, ScrollView } from "react-native";
+import { Text, View, StyleSheet, Alert, Pressable, Image, ScrollView, Keyboard } from "react-native";
 // import Constants from "expo-constants";
 
 // import { SubmitHandler, useForm, Controller } from "react-hook-form";
@@ -7,7 +7,7 @@ import { Text, View, StyleSheet, Alert, Pressable, Image, ScrollView } from "rea
 import { Button, Divider, MD3Colors, ProgressBar, TextInput } from "react-native-paper";
 import { useIsFocused } from "@react-navigation/native";
 import { COLORS, SIZES } from "../../constants/theme";
-import { FontAwesome, Ionicons} from '@expo/vector-icons'
+import { FontAwesome, Ionicons, AntDesign} from '@expo/vector-icons'
 import BackArrow from '../../components/backArrow'
 import { auth, db } from '../../firebase';
 import { AuthContext } from '../../config/AuthContext'
@@ -15,14 +15,97 @@ import Loader from '../../components/loader'
 import { doc, getDoc, setDoc, serverTimestamp, updateDoc  } from "firebase/firestore";
 import { MaritalStatusData } from "../../data";
 import { TouchableOpacity } from "react-native-gesture-handler";
+import DateTimePicker from '@react-native-community/datetimepicker';
+import { VisaContext } from "../../config/VisaContext";
 
 export default function MaritalAndEmploymentScreen({ navigation }) {
+
+  const {visaId} = useContext(VisaContext)
+
+  const { user } = useContext(AuthContext)
+
+  const [userData, setUserData] = useState({})
   
-  const [errorMessage, setErrorMessage] = useState('')
   const [loading, setLoading] = useState(false)
-  const [married, setMarried] = useState('married')
-  const [children, setChildren] = useState([{firstname : "", surname : "", dob : ""}])
+  const [isMarried, setIsMarried] = useState('married')
+  const [children, setChildren] = useState([])
+  const [spouseName, setSpouseName] = useState("")
 //   const [marriedStatus, setMarriedStatus] = useState(true)
+
+const [dateOfBirth, setDateOfBirth] = useState('');
+
+const [errorSpouseName, setErrorSpouseName] = useState("");
+
+const [errorSpouseDob, setErrorSpouseDob] = useState('');
+
+const [showPickerChild, setShowPickerChild] = useState(false);
+
+const [dateChild, setDateChild] = useState(new Date());
+
+
+const [dateOfBirthChild, setDateOfBirthChild] = useState('');
+
+// const [formReady, setFormReady] = useState(false);
+
+// const [dateError, setDateError] = useState('');
+
+const [showPicker, setShowPicker] = useState(false);
+
+const [date, setDate] = useState(new Date());
+
+
+const toggleDatePicker = () => {
+  setShowPicker(!showPicker)
+}
+
+const onChangeDate = ({type}, selectedDate ) => {
+    if(type == 'set'){
+      const currentDate = selectedDate;
+      setDate(currentDate)
+
+      if(Platform.OS ==='android'){
+        toggleDatePicker();
+        setDateOfBirth(currentDate.toDateString());
+      }
+
+    }else{
+      toggleDatePicker();
+    }
+}
+
+const confirmIOSDate = () => {
+  setDateOfBirth(date.toDateString());
+  toggleDatePicker();
+  
+}
+
+// Children
+
+
+const toggleDatePickerChild = () => {
+  setShowPickerChild(!showPickerChild)
+}
+
+const onChangeDateChild = ({type}, selectedDate ) => {
+    if(type == 'set'){
+      const currentDate = selectedDate;
+      setDateChild(currentDate)
+
+      if(Platform.OS ==='android'){
+        toggleDatePickerChild();
+        setDateOfBirthChild(currentDate.toDateString());
+      }
+
+    }else{
+      toggleDatePickerChild();
+    }
+}
+
+const confirmIOSDateChild = () => {
+  setDateOfBirthChild(date.toDateString());
+  toggleDatePickerChild();
+  
+}
 
     // React.useLayoutEffect(() => {
     //     navigation.setOptions({
@@ -54,19 +137,19 @@ export default function MaritalAndEmploymentScreen({ navigation }) {
     //     navigation.navigate("");
     //   };
 
-      const { user } = useContext(AuthContext)
+     
 
       console.log(user.uid)
 
 
 
-      const handleAdd = () => {
+    const handleAdd = () => {
             
-        setChildren([...children, {firstname : "" , surname : ""}])
+        setChildren([...children, {firstname : "" , dob : ""}])
 
     }
 
-       const handleDelete = (i) => {
+    const handleDelete = (i) => {
             
         const deleteVal = [...children]
         deleteVal.splice(i, 1)
@@ -75,87 +158,164 @@ export default function MaritalAndEmploymentScreen({ navigation }) {
       }
 
 
-      const handleChange = (e,i) => {
+    const handleChange = (e,i) => {
 
-            const {name, value} = e.target
-            const onChangeVal = [...children]
-            onChangeVal[i][name] = value
+      const {value} = e.target
+      const onChangeVal = [...children]
+            onChangeVal[i] = value
             setChildren(onChangeVal)
 
 
+    }
+    
+    
+      const getUser = async() => {
+        const docRef = doc(db, "travellers", user.uid);
+          const docSnap = await getDoc(docRef);
+          
+          if (docSnap.exists()) {
+    
+            setUserData(docSnap.data())
+            
+          } else {
+    
+            console.log("No such document!");
+          }
       }
     
+      useEffect(()=>{
+        getUser()
+      }, [])
+
+
+
     
-      // const getUser = async() => {
-      //   const docRef = doc(db, "travellers", user.uid);
-      //     const docSnap = await getDoc(docRef);
-          
-      //     if (docSnap.exists()) {
-    
-      //       setUserData(docSnap.data())
+      
+      const handleSubmit = async() => {
+
+        Keyboard.dismiss()
+
+        if (isMarried === 'married') {
+
+            if(spouseName === ""){
+
+              return setErrorSpouseName('Please enter your spouse name');
+              
+            }
+
+            if(dateOfBirth === ""){
+
+              return setErrorSpouseDob('Please enter your spouse Date of Birth');
+              
+            }
+
             
-      //     } else {
+
+              setLoading(true);
+
+            try {
+      
+              await updateDoc(doc(db, "visa", visaId), {
+      
+                  spouseName: spouseName,
+                  spouseDob: dateOfBirth,
+                  // children: children,
+                  timeStamp: serverTimestamp(),
+      
+              });
+
+              setLoading(false)
+                
+              navigation.navigate("ParentScreen");
     
-      //       console.log("No such document!");
-      //     }
-      // }
+            // .then(async() => {
     
-      // useEffect(()=>{
-      //   getUser()
-      // }, [])
+            //   await updateDoc(doc(db, "travellers", user.uid), {
     
-      // console.log(userData)
+            //     surname: surname,
+            //     gender: gender,
+            //     socials: socials,
+            //     timeStamp: serverTimestamp(),
+    
+            //  })
+    
+            //  setLoading(false)
+              
+            //   navigation.navigate("MaritalAndEmploymentScreen");
+    
+            
+    
+          
+        } catch (error) {
+    
+          console.log('error:',error.message)
+    
+        }
+          
+        } else {
+
+          setLoading(false)
+          navigation.navigate("ParentScreen");
+          
+        }
+         
+        
+         
+
+        
+    
+      }
     
 
-    const handleMyProfile = async() => {
+    // const handleMyProfile = async() => {
 
 
      
 
       
-    //   if(employmentLetter === null){
+    // //   if(employmentLetter === null){
 
-    //     return setErrorMessage('Please choose an option');
+    // //     return setErrorMessage('Please choose an option');
         
-    //   }
-    navigation.navigate("EducationScreen");
+    // //   }
+    // navigation.navigate("EducationScreen");
 
-    //     try {
+    // //     try {
 
-    //       setLoading(true)
+    // //       setLoading(true)
 
-    //        await updateDoc(doc(db, "travellers", user.uid), {
+    // //        await updateDoc(doc(db, "travellers", user.uid), {
         
-    //    internationalPassport : internationalPassport,
+    // //    internationalPassport : internationalPassport,
       
-    //    timeStamp: serverTimestamp(),
+    // //    timeStamp: serverTimestamp(),
         
 
-    // }).then(() => {
-    //   setLoading(false)
-    //   // showToast()
-    //   // if (condition) {
+    // // }).then(() => {
+    // //   setLoading(false)
+    // //   // showToast()
+    // //   // if (condition) {
         
-    //   // } else {
+    // //   // } else {
         
-    //   // }
-    //   navigation.navigate("UserInformationScreen");
+    // //   // }
+    // //   navigation.navigate("UserInformationScreen");
         
-    // })
-    // navigation.navigate("UserInformationScreen");
+    // // })
+    // // navigation.navigate("UserInformationScreen");
           
-    //     } catch (error) {
-    //       console.log('error:',error.message)
-    //     }
+    // //     } catch (error) {
+    // //       console.log('error:',error.message)
+    // //     }
 
        
-    //   }else{
+    // //   }else{
 
-    //     return setErrorMessage('Please select your visa Type');
+    // //     return setErrorMessage('Please select your visa Type');
         
-    //   }
+    // //   }
         
-  }
+    // }
 
 
   return (
@@ -196,7 +356,7 @@ export default function MaritalAndEmploymentScreen({ navigation }) {
 
                         <View style={{flexDirection:'row', alignItems:'center',}}>
 
-                        <Pressable key= {item.value} onPress={() => setMarried(item.value)} style={{
+                        <Pressable key= {item.value} onPress={() => setIsMarried(item.value)} style={{
                         width:30,
                         height:30,
                         flexDirection:'column',
@@ -212,11 +372,11 @@ export default function MaritalAndEmploymentScreen({ navigation }) {
                         borderWidth:1,
                         // borderRadius:10,
                         backgroundColor:'white',
-                        borderColor: married == item.value? COLORS.main : 'lightgray',
+                        borderColor: isMarried == item.value? COLORS.main : 'lightgray',
                         position:'relative'
                     
                         }}>
-                        {married === item.value ? <View style={styles.check}>
+                        {isMarried === item.value ? <View style={styles.check}>
                             <FontAwesome name="check" size={20} color='darkblue'/>
                         </View> : null}
                         
@@ -224,7 +384,7 @@ export default function MaritalAndEmploymentScreen({ navigation }) {
 
                         <Text style={{
                             fontSize:13,
-                            color: married == item.value? COLORS.main : 'black',
+                            color: isMarried == item.value? COLORS.main : 'black',
                         }}>
                             {item.title}
                         </Text>
@@ -240,29 +400,143 @@ export default function MaritalAndEmploymentScreen({ navigation }) {
 
                 
 
-                {errorMessage &&
+                {/* {errorMessage &&
                 <Text style={{color:'red', fontSize:10, marginVertical:5}}> {errorMessage}</Text>
-                }
+                } */}
 
             </View> 
 
-            {married === 'married'?
+            {isMarried === 'married'?
 
                 <>
-                
-                    <TextInput
-                        type='text'
-                        style={{ marginTop: 15 }}
-                        label='Spouse Name'
-                        mode='outlined'
-                    />
 
+                <View>
+
+                  
+                  <TextInput
+                      type='text'
+                      style={{  }}
+                      label='Spouse Name'
+                      mode='outlined'
+                      value={spouseName}
+                      onChangeText={(e) => setSpouseName(e)}
+                  />
+
+                  {errorSpouseName &&
+                    <Text style={{color:'red', fontSize:10, marginVertical:5}}> {errorSpouseName}</Text>
+                  }
+                  </View>
+
+
+            <View style={{ width:318, borderRadius:5,  marginVertical:10, borderBottomWidth:0, position:'relative' }}>
+
+                {showPicker && (
+
+                  <DateTimePicker
+                    
+                    mode='date'
+                    display='spinner'
+                    value={date}
+                    onChange = {onChangeDate}
+                    style={{height:70, marginTop:-10, width:'100%'}}
+                  />
+
+                )
+                }
+
+                {showPicker && Platform.OS === 'ios' && (
+                    <View
+                      style={{
+                        flexDirection:'row',
+                        justifyContent:'space-between'
+                      }}
+                    >
+                        <TouchableOpacity
+                          style={{
+                            backgroundColor:'#11182711', paddingHorizontal:20, height:50,
+                            justifyContent:'center', alignItems:'center', borderRadius:50,
+                            marginTop:10, marginBottom:15
+                          }}
+
+                          onPress={toggleDatePicker}
+                        >
+                          <Text
+                            style={{
+                              color:'#075985',
+                              fontSize:14,
+                              fontWeight:"500"
+                            }}
+                          >Cancel</Text>
+                        </TouchableOpacity>
+
+                        <TouchableOpacity
+                          style={{
+                            backgroundColor:COLORS.main, paddingHorizontal:20, height:50,
+                            justifyContent:'center', alignItems:'center', borderRadius:50,
+                            marginTop:10, marginBottom:15
+                          }}
+
+                          onPress={confirmIOSDate}
+                        >
+                          <Text
+                            style={{
+                              color:'#fff',
+                              fontSize:14,
+                              fontWeight:"500"
+                            }}
+                          >Confirm</Text>
+                        </TouchableOpacity>
+                    </View>
+                )}
+
+
+
+                {!showPicker && (
+
+                <Pressable
+                    onPress={toggleDatePicker}
+                    >
                     <TextInput
+                      mode="outlined"
+                      placeholder='Date of Birth'
+                      label='Date of Birth'
+                      value={dateOfBirth}
+                      onChangeText = {e => setDateOfBirth(e)}
+                      placeholderTextColor='#000'
+                      editable={false}
+                      style={{
+                          color:!showPicker && 'black',width:316, borderBottomWidth:0
+                      }}
+                      onPressIn={toggleDatePicker}
+                    />
+                </Pressable>
+
+                )
+
+                }
+
+                <View style={{position:"absolute",width:30, height:30, top:15, right:5 }}>
+
+                <AntDesign name="calendar" size={24} color="black" />
+                </View>
+
+                <View>
+                  {errorSpouseDob &&
+                    <Text style={{color:'red', fontSize:10, marginVertical:5}}> {errorSpouseDob}</Text>
+                  }
+                </View>
+                
+
+              </View> 
+                
+                  
+
+                    {/* <TextInput
                         type='text'
                         style={{ marginTop: 15 }}
                         label='Marriage Date (certificate date)'
                         mode='outlined'
-                    />
+                    /> */}
                     <View style={{flexDirection:'column'}}>
                     <View style={{flexDirection:'row', justifyContent:'space-between', alignItems:'center', marginVertical:15}}>
                         <Text>Add Child Info (if any)</Text>
@@ -277,29 +551,131 @@ export default function MaritalAndEmploymentScreen({ navigation }) {
                                     <TextInput
                                         type='text'
                                         style={{ marginTop: 5 }}
-                                        label='Child firstname'
+                                        label='firstname'
                                         mode='outlined'
                                         value={val.firstname}
                                         onChangeText={(e) => handleChange(e,i)}
+                                        name = "firstname"
                                     />
 
-                                    <TextInput
+                                     {/* <TextInput
                                         type='text'
                                         style={{ marginTop: 5 }}
                                         label='Child surname'
                                         mode='outlined'
                                         value={val.surname}
                                         onChangeText={(e) => handleChange(e,i)}
-                                    />
+                                        name = "surname"
+                                    />  */}
                                     
                                     <TextInput
                                         type='text'
                                         style={{ marginTop: 5 }}
-                                        label='Dob'
+                                        label='Date of Birth'
                                         mode='outlined'
                                         value={val.dob}
                                         onChangeText={(e) => handleChange(e,i)}
+                                        name = "dob"
+                                        
                                     />
+
+
+                                    {/* <View style={{ alignItems:'center', justifyContent:'flex-start', borderRadius:5,  marginVertical:10,  }}>
+
+                                    {showPickerChild && (
+
+                                      <DateTimePicker
+                                        
+                                        mode='date'
+                                        display='spinner'
+                                        value={dateChild}
+                                        onChange = {onChangeDateChild}
+                                        // style={{height:70, marginTop:-10, width:'100%'}}
+                                      />
+
+                                    )
+                                    }
+
+                                    {showPickerChild && Platform.OS === 'ios' && (
+                                        <View
+                                          style={{
+                                            flexDirection:'row',
+                                            justifyContent:'space-between'
+                                          }}
+                                        >
+                                            <TouchableOpacity
+                                              style={{
+                                                backgroundColor:'#11182711', paddingHorizontal:20, height:50,
+                                                justifyContent:'center', alignItems:'center', borderRadius:50,
+                                                marginTop:10, marginBottom:15
+                                              }}
+
+                                              onPress={toggleDatePickerChild}
+                                            >
+                                              <Text
+                                                style={{
+                                                  color:'#075985',
+                                                  fontSize:14,
+                                                  fontWeight:"500"
+                                                }}
+                                              >Cancel</Text>
+                                            </TouchableOpacity>
+
+                                            <TouchableOpacity
+                                              style={{
+                                                backgroundColor:COLORS.main, paddingHorizontal:20, height:50,
+                                                justifyContent:'center', alignItems:'center', borderRadius:50,
+                                                marginTop:10, marginBottom:15
+                                              }}
+
+                                              onPress={confirmIOSDateChild}
+                                            >
+                                              <Text
+                                                style={{
+                                                  color:'#fff',
+                                                  fontSize:14,
+                                                  fontWeight:"500"
+                                                }}
+                                              >Confirm</Text>
+                                            </TouchableOpacity>
+                                        </View>
+                                    )}
+
+
+
+                                    {!showPickerChild && (
+
+                                    <Pressable
+                                        onPress={toggleDatePickerChild}
+                                        >
+                                        <TextInput
+                                          placeholder='Child Date of Birth'
+                                          value={dateOfBirthChild}
+                                          // onChangeText = {e => setDateOfBirth(e)}
+                                          placeholderTextColor='#000'
+                                          editable={false}
+                                          style={{
+                                              color:!showPicker && 'black',width:220,
+                                          }}
+                                          onPressIn={toggleDatePicker}
+
+
+                                          // type='text'
+                                          // style={{ marginTop: 5 }}
+                                          label='Date of Birth'
+                                          mode='outlined'
+                                          // value={val.dob}
+                                          onChangeText={(e) => handleChange(e,i)}
+                                        />
+                                    </Pressable>
+
+                                    )
+
+                                    }
+
+                                    </View>  */}
+
+
                                     </View>
                                     <Pressable onPress={() => handleDelete(i)} style={{paddingVertical:10, paddingHorizontal:20,backgroundColor:'brown', borderRadius:5}}>
                                         <Text style={{color:'white'}}>Delete</Text>
@@ -332,7 +708,7 @@ export default function MaritalAndEmploymentScreen({ navigation }) {
 
      </View>
     </ScrollView>
-      <Pressable onPress = {handleMyProfile}  style = {{ backgroundColor : 'brown', width : '100%', marginBottom : 20, alignItems : 'center', justifyContent : 'center',paddingVertical : 20, flexDirection : 'row',}}>
+      <Pressable onPress = {handleSubmit}  style = {{ backgroundColor : 'brown', width : '100%', marginBottom : 20, alignItems : 'center', justifyContent : 'center',paddingVertical : 20, flexDirection : 'row',}}>
         <Text style={{color : 'white', fontSize : 18, marginRight : 10}}>Next</Text>
         <View style = {{ alignItems : 'center', flexDirection : 'row', width : 17}}>
           <Ionicons name="chevron-forward" size={24} color="white" />

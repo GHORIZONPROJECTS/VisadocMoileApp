@@ -13,15 +13,18 @@ import BackArrow from '../../components/backArrow'
 import { auth, db } from '../../firebase';
 import { AuthContext } from '../../config/AuthContext'
 import { doc, getDoc, setDoc, serverTimestamp, updateDoc  } from "firebase/firestore";
+import { VisaContext } from "../../config/VisaContext";
 
 
 export default function VisaTypeScreen({ navigation }) {
 
+  const {visaId} = useContext(VisaContext)
+
    const [selectedItem, setSelectedItem] = useState(null);
    const [errorMessage, setErrorMessage] = useState('')
    const selectedData = [
-    {value:'Single', title:'Single', image:require('../../../assets/images/singleTraveller.png')},
-    {value:'Family', title: 'Family', image:require('../../../assets/images/familyTravellers.png')},
+    {value:'Single', title:'Single', image:require('../../../assets/images/single.png')},
+    {value:'Family', title: 'Family', image:require('../../../assets/images/family.png')},
    ]
 
     // React.useLayoutEffect(() => {
@@ -86,27 +89,25 @@ export default function VisaTypeScreen({ navigation }) {
 
         try {
 
-           await updateDoc(doc(db, "travellers", user.uid), {
+           await updateDoc(doc(db, "visa", visaId), {
         
-        visaType : selectedItem,
-        timeStamp: serverTimestamp(),
+            visaType : selectedItem,
+
+            timeStamp: serverTimestamp(),
         
 
-    }).then(() => {
-      // setLoading(false)
-      // showToast()
-      // if (condition) {
-        
-      // } else {
-        
-      // }
+    })
+    .then(() => {
+    
       navigation.navigate("AvailableDocumentScreen");
         
     })
   
           
         } catch (error) {
+
           console.log('error:',error.message)
+
         }
 
        
@@ -118,6 +119,7 @@ export default function VisaTypeScreen({ navigation }) {
         
   }
   return (
+    
     <View style={styles.container}>
     {/* <ProgressBar
       style={styles.progressBar}

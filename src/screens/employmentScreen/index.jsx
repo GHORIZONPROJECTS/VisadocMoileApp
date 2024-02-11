@@ -7,7 +7,7 @@ import { Text, View, StyleSheet, Alert, Pressable, Image, ScrollView } from "rea
 import { Button, Divider, MD3Colors, ProgressBar, TextInput } from "react-native-paper";
 import { useIsFocused } from "@react-navigation/native";
 import { COLORS, SIZES } from "../../constants/theme";
-import { FontAwesome, Ionicons} from '@expo/vector-icons'
+import { FontAwesome, Ionicons, AntDesign} from '@expo/vector-icons'
 import BackArrow from '../../components/backArrow'
 import { auth, db } from '../../firebase';
 import { AuthContext } from '../../config/AuthContext'
@@ -15,136 +15,310 @@ import Loader from '../../components/loader'
 import { doc, getDoc, setDoc, serverTimestamp, updateDoc  } from "firebase/firestore";
 import { EmploymentStatusData, MaritalStatusData } from "../../data";
 import { TouchableOpacity } from "react-native-gesture-handler";
+import { VisaContext } from "../../config/VisaContext";
+import DateTimePicker from '@react-native-community/datetimepicker';
 
 export default function EmploymentScreen({ navigation }) {
+
   
-  const [errorMessage, setErrorMessage] = useState('')
+  const {visaId} = useContext(VisaContext)
+  
   const [loading, setLoading] = useState(false)
-  const [employed, setEmployed] = useState('employed')
-  const [children, setChildren] = useState([{firstname : "", surname : "", dob : ""}])
-//   const [marriedStatus, setMarriedStatus] = useState(true)
 
-    // React.useLayoutEffect(() => {
-    //     navigation.setOptions({
-    //       headerLeft: () => null,
-    //     });
-    // }, [navigation]);
+  const [isEmployed, setIsEmployed] = useState('employed')
 
-    // const {
-    //     handleSubmit,
-    //     control,
-    //     formState: { errors },
-    //   } = useForm({ defaultValues: WizardStore.useState((s) => s) });
-    //   const isFocused = useIsFocused();
+  const [currentCompany, setCurrentCompany] = useState("")  
+
+  const [companyAddress, setCompanyAddress] = useState("") 
+
+  const [natureOfJob, setNatureOfJob] = useState("")  
+
+  const [workPosition, setWorkPosition] = useState("")    
+
+  const [jobDuties, setJobDuties] = useState("") 
+
+  const [previousCompany, setPreviousCompany] = useState("")   
+
+  const [previousCompanyAddress, setPreviousCompanyAddress] = useState("") 
+
+  const [previousCompanyNatureOfJob, setPreviousCompanyNatureOfJob] = useState("")  
+
+  const [previousJobPosition, setPreviousJobPosition] = useState("")  
+
+  const [previousJobDuties, setPreviousJobDuties] = useState("") 
+           
+  const [showPickerEmploymentDate, setShowPickerEmploymentDate] = useState(false);
+
+  const [dateEmployment, setDateEmployment] = useState(new Date());
+
+  const [dateOfEmployment, setDateOfEmployment] = useState('');
+
+  const [showPickerPreviousCompanyDateOfEmployment, setShowPickerPreviousCompanyDateOfEmployment] = useState(false);
+
+
+  const [dateOfPreviousEmployment, setDateOfPreviousEmployment] = useState('');
+
+
+  const [datePreviouslyEmployed, setDatePreviouslyEmployed] = useState(new Date());
+
+  const [errorCurrentCompany, setErrorCurrentCompany] = useState("")
+
+  const [errorCompanyAddress, setErrorCompanyAddress] = useState("")
+
+  const [errorNatureOfJob, setErrorNatureOfJob] = useState("")
+
+  const [errorDateOfEmployment, setErrorDateOfEmployment] = useState("")
+
+  const [errorWorkPosition, setErrorWorkPosition] = useState("")
+
+  const [errorJobDuties, setErrorJobDuties] = useState("")
+
+  const [errorPreviousCompany, setErrorPreviousCompany] = useState("")
+
+  const [errorPreviousCompanyAddress, setErrorPreviousCompanyAddress] = useState("")
+
+  const [errorPreviousCompanyNatureOfJob, setErrorPreviousCompanyNatureOfJob] = useState("")
+
+  const [errorPreviousDateOfEmployment, setErrorPreviousDateOfEmployment] = useState("")
+
+  const [errorPreviousJobPosition, setErrorPreviousJobPosition] = useState("")
+
+  const [errorPreviousJobDuties, SetErrorPreviousJobDuties] = useState("")
+
+
+  const toggleDatePickerEmployment = () => {
+    setShowPickerEmploymentDate(!showPickerEmploymentDate)
+  }
+
+  const onChangeDateEmployment = ({type}, selectedDate ) => {
+      if(type == 'set'){
+        const currentDate = selectedDate;
+        setDateEmployment(currentDate)
+
+        if(Platform.OS ==='android'){
+          toggleDatePickerEmployment();
+          setDateOfEmployment(currentDate.toDateString());
+        }
+
+      }else{
+        toggleDatePickerEmployment();
+      }
+  }
+
+  const confirmIOSDateEmployment = () => {
+    setDateOfEmployment(date.toDateString());
+    toggleDatePickerEmployment();
     
-    //   useEffect(() => {
-    //     isFocused &&
-    //       WizardStore.update((s) => {
-    //         s.progress = 0;
-    //       });
+  }
+
+  // Previous Employment date Info
+
+  const toggleDatePreviouslyEmployed = () => {
+    setShowPickerPreviousCompanyDateOfEmployment(!showPickerPreviousCompanyDateOfEmployment)
+  }
+
+  const onChangeDatePreviousEmployedDate = ({type}, selectedDate ) => {
+      if(type == 'set'){
+        const currentDate = selectedDate;
+        setDatePreviouslyEmployed(currentDate)
+
+        if(Platform.OS ==='android'){
+          toggleDatePreviouslyEmployed();
+          setDateOfPreviousEmployment(currentDate.toDateString());
+        }
+
+      }else{
+        toggleDatePreviouslyEmployed();
+      }
+  }
+
+  const confirmIOSDatePreviousEmployedDate = () => {
+    setDateOfPreviousEmployment(date.toDateString());
+    toggleDatePreviouslyEmployed();
     
-    //   }, [isFocused]);
-    
-    //   const onSubmit = (internationalPassport) => {
-    //     WizardStore.update((s) => {
-    //       s.progress = 33;
-    //       s.service = internationalPassport.value;
-    //       // s.age = data.age;
-    //     });
-    //     navigation.navigate("");
-    //   };
+  }
 
       const { user } = useContext(AuthContext)
 
       console.log(user.uid)
 
+      console.log(isEmployed)
 
 
-      const handleAdd = () => {
-            
-        setChildren([...children, {firstname : "" , surname : ""}])
+      const handleMyEmployment = async() => {
 
-    }
+                if (isEmployed === 'employed') {
 
-       const handleDelete = (i) => {
-            
-        const deleteVal = [...children]
-        deleteVal.splice(i, 1)
-        setChildren(deleteVal)
+                  if(currentCompany === ""){
 
-    }
-    
-    
-      // const getUser = async() => {
-      //   const docRef = doc(db, "travellers", user.uid);
-      //     const docSnap = await getDoc(docRef);
+                    return setErrorCurrentCompany('Please required field');
+                    
+                  }
+
+                  if(companyAddress === ""){
+
+                    return setErrorCompanyAddress('Please required field');
+                    
+                  }
           
-      //     if (docSnap.exists()) {
+                  if(natureOfJob === ""){
+          
+                    return setErrorNatureOfJob('Please required field');
+                    
+                  }
+          
+                  if(dateOfEmployment === ""){
+          
+                    return setErrorDateOfEmployment('Please required field');
+                    
+                  }
+          
+               
+                  if(workPosition === ""){
+          
+                    return setErrorWorkPosition('Please required field');
+                    
+                  }
+
+                  
+                  if(jobDuties === ""){
+
+                    return setErrorJobDuties('Please required field');
+                    
+                  }
+
+                  if(previousCompany === ""){
+
+                    return setErrorPreviousCompany('Please required field');
+                    
+                  }
+          
+                  if(previousCompanyAddress === ""){
+          
+                    return setErrorPreviousCompanyAddress('Please required field');
+                    
+                  }
+          
+                  if(previousCompanyNatureOfJob === ""){
+          
+                    return setErrorPreviousCompanyNatureOfJob('Please required field');
+                    
+                  }
+          
+               
+                  if(dateOfPreviousEmployment === ""){
+          
+                    return setErrorPreviousDateOfEmployment('Please required field');
+                    
+                  }
+
+                  if(previousJobPosition === ""){
+          
+                    return setErrorPreviousJobPosition('Please required field');
+                    
+                  }
+          
+               
+                  if(previousJobDuties === ""){
+          
+                    return SetErrorPreviousJobDuties('Please required field');
+                    
+                  }
+                  
+
+
+                  setLoading(true);
+
+                try {
+          
+                  await updateDoc(doc(db, "visa", visaId), {
+          
+                    currentCompany : currentCompany,                    
+                    companyAddress :  companyAddress,                   
+                    natureOfJob : natureOfJob,
+                    dateOfEmployment : dateOfEmployment,
+                    workPosition : workPosition,
+                    jobDuties : jobDuties,
+                    previousCompany : previousCompany,
+                    previousComapanyAddress : previousCompanyAddress,
+                    previousCompanyNatureOfJob : previousCompanyNatureOfJob,
+                    dateOfPreviousEmployment : dateOfPreviousEmployment,
+                    previousJobPosition : previousJobPosition,      
+                    previousJobDuties : previousJobDuties,
+                    timeStamp: serverTimestamp(),
+          
+                  });
+
+                  setLoading(false)
+                    
+                  navigation.navigate("TravelHistoryScreen");
+
+             
+            } catch (error) {
+
+              console.log('error:',error.message)
+
+            }
+              
+            } else {
+
+              setLoading(false)
+              navigation.navigate("ParentScreen");
+              
+            }
     
-      //       setUserData(docSnap.data())
-            
-      //     } else {
-    
-      //       console.log("No such document!");
-      //     }
-      // }
-    
-      // useEffect(()=>{
-      //   getUser()
-      // }, [])
-    
-      // console.log(userData)
+      }
     
 
-    const handleMyProfile = async() => {
+  //   const handleMyProfile = async() => {
 
 
      
 
       
-    //   if(employmentLetter === null){
+  //   //   if(employmentLetter === null){
 
-    //     return setErrorMessage('Please choose an option');
+  //   //     return setErrorMessage('Please choose an option');
         
-    //   }
-    navigation.navigate("ParentScreen");
+  //   //   }
+  //   navigation.navigate("ParentScreen");
 
-    //     try {
+  //   //     try {
 
-    //       setLoading(true)
+  //   //       setLoading(true)
 
-    //        await updateDoc(doc(db, "travellers", user.uid), {
+  //   //        await updateDoc(doc(db, "travellers", user.uid), {
         
-    //    internationalPassport : internationalPassport,
+  //   //    internationalPassport : internationalPassport,
       
-    //    timeStamp: serverTimestamp(),
+  //   //    timeStamp: serverTimestamp(),
         
 
-    // }).then(() => {
-    //   setLoading(false)
-    //   // showToast()
-    //   // if (condition) {
+  //   // }).then(() => {
+  //   //   setLoading(false)
+  //   //   // showToast()
+  //   //   // if (condition) {
         
-    //   // } else {
+  //   //   // } else {
         
-    //   // }
-    //   navigation.navigate("UserInformationScreen");
+  //   //   // }
+  //   //   navigation.navigate("UserInformationScreen");
         
-    // })
-    // navigation.navigate("UserInformationScreen");
+  //   // })
+  //   // navigation.navigate("UserInformationScreen");
           
-    //     } catch (error) {
-    //       console.log('error:',error.message)
-    //     }
+  //   //     } catch (error) {
+  //   //       console.log('error:',error.message)
+  //   //     }
 
        
-    //   }else{
+  //   //   }else{
 
-    //     return setErrorMessage('Please select your visa Type');
+  //   //     return setErrorMessage('Please select your visa Type');
         
-    //   }
+  //   //   }
         
-  }
+  // }
 
 
   return (
@@ -185,7 +359,7 @@ export default function EmploymentScreen({ navigation }) {
 
                         <View style={{flexDirection:'row', alignItems:'center',}}>
 
-                        <Pressable key= {item.value} onPress={() => setEmployed(item.value)} style={{
+                        <Pressable key= {item.value} onPress={() => setIsEmployed(item.value)} style={{
                         width:30,
                         height:30,
                         flexDirection:'column',
@@ -201,11 +375,11 @@ export default function EmploymentScreen({ navigation }) {
                         borderWidth:1,
                         // borderRadius:10,
                         backgroundColor:'white',
-                        borderColor: employed == item.value? COLORS.main : 'lightgray',
+                        borderColor: isEmployed == item.value? COLORS.main : 'lightgray',
                         position:'relative'
                     
                         }}>
-                        {employed === item.value ? <View style={styles.check}>
+                        {isEmployed === item.value ? <View style={styles.check}>
                             <FontAwesome name="check" size={20} color='darkblue'/>
                         </View> : null}
                         
@@ -213,7 +387,7 @@ export default function EmploymentScreen({ navigation }) {
 
                         <Text style={{
                             fontSize:13,
-                            color: employed == item.value? COLORS.main : 'black',
+                            color: isEmployed == item.value? COLORS.main : 'black',
                         }}>
                             {item.title}
                         </Text>
@@ -227,15 +401,9 @@ export default function EmploymentScreen({ navigation }) {
 
                 </View>
 
-                
-
-                {errorMessage &&
-                <Text style={{color:'red', fontSize:10, marginVertical:5}}> {errorMessage}</Text>
-                }
-
             </View> 
 
-            {employed === 'employed'?
+            {isEmployed === 'employed'?
 
                 <>
                 
@@ -244,133 +412,326 @@ export default function EmploymentScreen({ navigation }) {
                         style={{ marginTop: 15 }}
                         label='Current Comapany name'
                         mode='outlined'
+                        onChangeText = {e => setCurrentCompany(e)}
+                        value={currentCompany}
                     />
+
+                    {errorCurrentCompany &&
+                      <Text style={{color:'red', fontSize:10, marginVertical:5}}> {errorCurrentCompany}</Text>
+                    }
 
                     <TextInput
                         type='text'
                         style={{ marginTop: 15 }}
                         label='current company address'
                         mode='outlined'
+                        onChangeText = {e => setCompanyAddress(e)}
+                        value={companyAddress}
                     />
+                     {errorCompanyAddress &&
+                      <Text style={{color:'red', fontSize:10, marginVertical:5}}> {errorCompanyAddress}</Text>
+                    }
 
                     <TextInput
                         type='text'
                         style={{ marginTop: 15 }}
                         label='Nature of your job'
                         mode='outlined'
+                        onChangeText = {e => setNatureOfJob(e)}
+                        value={natureOfJob}
                     />
 
-                    <TextInput
-                        type='text'
-                        style={{ marginTop: 15 }}
-                        label='Date of employment'
-                        mode='outlined'
-                    />
+                    {errorNatureOfJob &&
+                      <Text style={{color:'red', fontSize:10, marginVertical:5}}> {errorNatureOfJob}</Text>
+                    }
+
+
+
+                    <View style={{ alignItems:'center', justifyContent:'flex-start', width:318, borderRadius:5,  marginVertical:10, borderBottomWidth:0, position:'relative' }}>
+
+                    {showPickerEmploymentDate && (
+
+                      <DateTimePicker
+                        
+                        mode='date'
+                        display='spinner'
+                        value={dateEmployment}
+                        onChange = {onChangeDateEmployment}
+                        style={{height:70, marginTop:-10, width:'100%'}}
+                      />
+
+                    )
+                    }
+
+                    {showPickerEmploymentDate && Platform.OS === 'ios' && (
+                        <View
+                          style={{
+                            flexDirection:'row',
+                            justifyContent:'space-between'
+                          }}
+                        >
+                            <TouchableOpacity
+                              style={{
+                                backgroundColor:'#11182711', paddingHorizontal:20, height:50,
+                                justifyContent:'center', alignItems:'center', borderRadius:50,
+                                marginTop:10, marginBottom:15
+                              }}
+
+                              onPress={toggleDatePickerEmployment}
+                            >
+                              <Text
+                                style={{
+                                  color:'#075985',
+                                  fontSize:14,
+                                  fontWeight:"500"
+                                }}
+                              >Cancel</Text>
+                            </TouchableOpacity>
+
+                            <TouchableOpacity
+                              style={{
+                                backgroundColor:COLORS.main, paddingHorizontal:20, height:50,
+                                justifyContent:'center', alignItems:'center', borderRadius:50,
+                                marginTop:10, marginBottom:15
+                              }}
+
+                              onPress={confirmIOSDateEmployment}
+                            >
+                              <Text
+                                style={{
+                                  color:'#fff',
+                                  fontSize:14,
+                                  fontWeight:"500"
+                                }}
+                              >Confirm</Text>
+                            </TouchableOpacity>
+                        </View>
+                    )}
+
+
+
+                    {!showPickerEmploymentDate && (
+
+                    <Pressable
+                        onPress={toggleDatePickerEmployment}
+                        >
+                        <TextInput
+                          mode="outlined"
+                          placeholder='Date of Current Employment'
+                          label='Date of Current Employment'
+                          value={dateOfEmployment}
+                          onChangeText = {e => setDateOfEmployment(e)}
+                          placeholderTextColor='#000'
+                          editable={false}
+                          style={{
+                              color:!showPickerEmploymentDate && 'black',width:316, borderBottomWidth:0
+                          }}
+                          onPressIn={toggleDatePickerEmployment}
+                        />
+                    </Pressable>
+
+                    )
+
+                    }
+
+                      <View style={{position:"absolute",width:30, height:30, top:15, right:5 }}>
+                        <AntDesign name="calendar" size={24} color="black" />
+                     
+                      </View>
+                  
+
+                    </View> 
+                    {errorDateOfEmployment &&
+                      <Text style={{color:'red', fontSize:10, marginVertical:5}}> {errorDateOfEmployment}</Text>
+                    }
 
                     <TextInput
                         type='text'
                         style={{ marginTop: 15 }}
                         label='Your position at work e.g Manager'
                         mode='outlined'
+                        onChangeText = {e => setWorkPosition(e)}
+                        value={workPosition}
                     />
+
+                    {errorWorkPosition &&
+                      <Text style={{color:'red', fontSize:10, marginVertical:5}}> {errorWorkPosition}</Text>
+                    }
 
                     <TextInput
                         type='text'
                         style={{ marginTop: 15 }}
                         label='briefly explain job duties'
                         mode='outlined'
+                        onChangeText = {e => setJobDuties(e)}
+                        value={jobDuties}
                     />
+                       {errorJobDuties &&
+                          <Text style={{color:'red', fontSize:10, marginVertical:5}}> {errorJobDuties}</Text>
+                       }
 
                     <TextInput
                         type='text'
                         style={{ marginTop: 15 }}
                         label='Previous company name'
                         mode='outlined'
+                        onChangeText = {e => setPreviousCompany(e)}
+                        value={previousCompany}
                     />
+
+                    {errorPreviousCompany &&
+                      <Text style={{color:'red', fontSize:10, marginVertical:5}}> {errorPreviousCompany}</Text>
+                    }
 
                     <TextInput
                         type='text'
                         style={{ marginTop: 15 }}
                         label='previous company address'
                         mode='outlined'
+                        onChangeText = {e => setPreviousCompanyAddress(e)}
+                        value={previousCompanyAddress}
                     />
+                    {errorPreviousCompanyAddress &&
+                      <Text style={{color:'red', fontSize:10, marginVertical:5}}> {errorPreviousCompanyAddress}</Text>
+                    }
 
                     <TextInput
                         type='text'
                         style={{ marginTop: 15 }}
                         label='Nature of the job'
                         mode='outlined'
+                        onChangeText = {e => setPreviousCompanyNatureOfJob(e)}
+                        value={previousCompanyNatureOfJob}
                     />
 
-                    <TextInput
-                        type='text'
-                        style={{ marginTop: 15 }}
-                        label='Date of employment'
-                        mode='outlined'
-                    />
+                    {errorPreviousCompanyNatureOfJob &&
+                      <Text style={{color:'red', fontSize:10, marginVertical:5}}> {errorPreviousCompanyNatureOfJob}</Text>
+                    }
+                
+
+                    <View style={{ alignItems:'center', justifyContent:'flex-start', width:318, borderRadius:5,  marginVertical:10, borderBottomWidth:0, position:'relative' }}>
+
+                    {showPickerPreviousCompanyDateOfEmployment && (
+
+                      <DateTimePicker
+                        
+                        mode='date'
+                        display='spinner'
+                        value={datePreviouslyEmployed}
+                        onChange = {onChangeDatePreviousEmployedDate}
+                        style={{height:70, marginTop:-10, width:'100%'}}
+                      />
+
+                    )
+                    }
+
+                    {showPickerPreviousCompanyDateOfEmployment && Platform.OS === 'ios' && (
+                        <View
+                          style={{
+                            flexDirection:'row',
+                            justifyContent:'space-between'
+                          }}
+                        >
+                            <TouchableOpacity
+                              style={{
+                                backgroundColor:'#11182711', paddingHorizontal:20, height:50,
+                                justifyContent:'center', alignItems:'center', borderRadius:50,
+                                marginTop:10, marginBottom:15
+                              }}
+
+                              onPress={toggleDatePreviouslyEmployed}
+                            >
+                              <Text
+                                style={{
+                                  color:'#075985',
+                                  fontSize:14,
+                                  fontWeight:"500"
+                                }}
+                              >Cancel</Text>
+                            </TouchableOpacity>
+
+                            <TouchableOpacity
+                              style={{
+                                backgroundColor:COLORS.main, paddingHorizontal:20, height:50,
+                                justifyContent:'center', alignItems:'center', borderRadius:50,
+                                marginTop:10, marginBottom:15
+                              }}
+
+                              onPress={confirmIOSDatePreviousEmployedDate}
+                            >
+                              <Text
+                                style={{
+                                  color:'#fff',
+                                  fontSize:14,
+                                  fontWeight:"500"
+                                }}
+                              >Confirm</Text>
+                            </TouchableOpacity>
+                        </View>
+                    )}
+
+
+
+                        {!showPickerPreviousCompanyDateOfEmployment && (
+
+                        <Pressable
+                            onPress={toggleDatePreviouslyEmployed}
+                            >
+                            <TextInput
+                              mode="outlined"
+                              placeholder='Date of Previous Employment'
+                              label='Date of Previous Employment'
+                              value={dateOfPreviousEmployment}
+                              onChangeText = {e => setDateOfPreviousEmployment(e)}
+                              placeholderTextColor='#000'
+                              editable={false}
+                              style={{
+                                  color:!showPickerPreviousCompanyDateOfEmployment && 'black',width:316, borderBottomWidth:0
+                              }}
+                              onPressIn={toggleDatePreviouslyEmployed}
+                            />
+                        </Pressable>
+
+                        )
+
+                        }
+
+                      <View style={{position:"absolute",width:30, height:30, top:15, right:5 }}>
+                        <AntDesign name="calendar" size={24} color="black" />
+                      </View>    
+
+                    </View> 
+                    {errorPreviousDateOfEmployment &&
+                      <Text style={{color:'red', fontSize:10, marginVertical:5}}> {errorPreviousDateOfEmployment}</Text>
+                    }
+                                        
+
 
                     <TextInput
                         type='text'
                         style={{ marginTop: 15 }}
                         label='Your Positon at your last job'
                         mode='outlined'
+                        onChangeText = {e => setPreviousJobPosition(e)}
+                        value={previousJobPosition}
                     />
+
+                    {errorPreviousJobPosition &&
+                      <Text style={{color:'red', fontSize:10, marginVertical:5}}> {errorPreviousJobPosition}</Text>
+                    }
 
                     <TextInput
                         type='text'
                         style={{ marginTop: 15 }}
                         label='explain your job duties'
                         mode='outlined'
+                        onChangeText = {e => setPreviousJobDuties(e)}
+                        value={previousJobDuties}
                     />
+                    {errorPreviousJobDuties &&
+                      <Text style={{color:'red', fontSize:10, marginVertical:5}}> {errorPreviousJobDuties}</Text>
+                    }
 
-
-                    {/* <View style={{flexDirection:'column'}}>
-                    <View style={{flexDirection:'row', justifyContent:'space-between', alignItems:'center', marginVertical:15}}>
-                        <Text>Add Child Info (if any)</Text>
-                        <TouchableOpacity onPress={() => handleAdd()} style={{paddingVertical:10, paddingHorizontal:20,backgroundColor:COLORS.main, borderRadius:5}}>
-                             <Text style={{color:'white', fontWeight:'500'}}>+Add</Text> 
-                        </TouchableOpacity>
-                    </View>
-                        {
-                            children.map((val, i) =>(
-                                <View key = {i} style={{flexDirection:'row', alignItems:'center', justifyContent:'space-between', marginBottom:40 }}>
-                                    <View style={{flexDirection:'column', width:'70%'}}>
-                                    <TextInput
-                                        type='text'
-                                        style={{ marginTop: 5 }}
-                                        label='Child firstname'
-                                        mode='outlined'
-                                        value={val.firstname}
-                                        onChangeText={(e) => handleChange(e,i)}
-                                    />
-
-                                    <TextInput
-                                        type='text'
-                                        style={{ marginTop: 5 }}
-                                        label='Child surname'
-                                        mode='outlined'
-                                        value={val.surname}
-                                        onChangeText={(e) => handleChange(e,i)}
-                                    />
-                                    
-                                    <TextInput
-                                        type='text'
-                                        style={{ marginTop: 5 }}
-                                        label='Dob'
-                                        mode='outlined'
-                                        value={val.dob}
-                                        onChangeText={(e) => handleChange(e,i)}
-                                    />
-                                    </View>
-                                    <Pressable onPress={() => handleDelete(i)} style={{paddingVertical:10, paddingHorizontal:20,backgroundColor:'brown', borderRadius:5}}>
-                                        <Text style={{color:'white'}}>Delete</Text>
-                                    </Pressable>
-                                </View>
-                                
-
-                            ))
-                        }
-                    </View> */}
                 </>
 
                 :
@@ -379,21 +740,11 @@ export default function EmploymentScreen({ navigation }) {
 
             }
 
-     
-      
-        {/* {errorMessage &&
-          <Text style={{color:'red', fontSize:10, marginVertical:5}}> {errorMessage}</Text>
-        } */}
-   
-       
-        
      </View> 
-
-
-
+     
      </View>
     </ScrollView>
-      <Pressable onPress = {handleMyProfile}  style = {{ backgroundColor : 'brown', width : '100%', marginBottom : 20, alignItems : 'center', justifyContent : 'center',paddingVertical : 20, flexDirection : 'row',}}>
+      <Pressable onPress = {handleMyEmployment}  style = {{ backgroundColor : 'brown', width : '100%', marginBottom : 20, alignItems : 'center', justifyContent : 'center',paddingVertical : 20, flexDirection : 'row',}}>
         <Text style={{color : 'white', fontSize : 18, marginRight : 10}}>Next</Text>
         <View style = {{ alignItems : 'center', flexDirection : 'row', width : 17}}>
           <Ionicons name="chevron-forward" size={24} color="white" />

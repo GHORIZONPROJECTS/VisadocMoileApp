@@ -1,13 +1,32 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import { Text, View, StyleSheet, ScrollView, Pressable, TouchableOpacity, Image } from "react-native";
 // import { useForm, Controller } from "react-hook-form";
 // import { InspectionStore } from "../../store";
 import { Button, MD3Colors, ProgressBar, TextInput, Divider, RadioButton } from "react-native-paper";
 import { useIsFocused } from "@react-navigation/native";
-import { SIZES} from "../../constants/theme";
+import { SIZES } from "../../constants/theme";
+import { FontAwesome, Ionicons, AntDesign} from '@expo/vector-icons'
 // import LottieView from 'lottie-react-native';
 
+import { auth, db } from '../../firebase';
+import { AuthContext } from '../../config/AuthContext'
+import Loader from '../../components/loader'
+import { doc, getDoc, setDoc, serverTimestamp, updateDoc  } from "firebase/firestore";
+import { VisaContext } from "../../config/VisaContext";
+
 export default function PaymentSuccessfulScreen({ navigation }) {
+
+
+  const [userData, setUserData] = useState({})
+    const [image, setImage] = useState(null)  
+    const [uploading, setUploading] = useState(false)
+    const [visaData, setVisaData] = useState({})
+    const [loading, setLoading] = useState(false)
+  
+    const { user } = useContext(AuthContext)
+  
+    const {visaId} = useContext(VisaContext)
+  
 
 
 //   const isFocused = useIsFocused();
@@ -27,20 +46,25 @@ export default function PaymentSuccessfulScreen({ navigation }) {
 //     console.log("updated state...", InspectionStore.getRawState().progress);
 //   }, [isFocused]);
 
-  
+const onSubmit= async() => {
 
-  const onSubmit = () => {
-    
-    // InspectionStore.update((s) => {
+  setUploading(true)
 
-    //   s.progress = 100;
-      
-    // });
-    
-    navigation.navigate("HomeScreen");
+  await updateDoc(doc(db, "travellers", user.uid), {
 
-  };
+      registered : true,
+      timeStamp: serverTimestamp(),
 
+    });
+
+   
+   setUploading(false)
+
+  navigation.navigate("HomeScreen", )
+
+  } 
+
+ 
 
   return (
     <ScrollView style={styles.container}>
@@ -51,7 +75,7 @@ export default function PaymentSuccessfulScreen({ navigation }) {
       /> */}
 
          
-      <View style={{  alignItems:'center', justifyContent:'center', marginVertical:50, marginHorizontal:50}}>
+      <View style={{  alignItems:'center', justifyContent:'center', marginVertical:50, marginHorizontal:20}}>
 
       {/* <LottieView
             // ref={animation}
@@ -70,19 +94,20 @@ export default function PaymentSuccessfulScreen({ navigation }) {
             </Text> 
 
             <Text style={{fontSize:13, fontWeight:500, marginBottom:10, color:'gray', textAlign:'center', lineHeight:30}}>
-            You will receive an email in your inbox to confirm your email account.
-            Then track you visa application process!
+            You will receive an email in your inbox to confirm your PAYMENT.
+            Then track you visa application process on your VisaDoc App !
              
             </Text> 
             <Text style={{fontSize:13, fontWeight:400, marginBottom:10, color:'blue'}}>Congratulations!</Text>
 
-            <Button
-                onPress={onSubmit}
-                mode="outlined"
-                style={[styles.button, { marginTop: 40, width:SIZES.width*0.8 }]}
-                >
-                Continue 
-            </Button>
+            <Pressable onPress={onSubmit} style = {{ backgroundColor : 'brown', width : '100%', marginTop : 80, alignItems : 'center', justifyContent : 'center',paddingVertical : 20, flexDirection : 'row',}}>
+         <Text style={{color : 'white', fontSize : 18, marginRight : 10}}>Track your application</Text>
+         <View style = {{ alignItems : 'center', flexDirection : 'row', width : 17}}>
+           <Ionicons name="chevron-forward" size={24} color="white" />
+           <Ionicons name="chevron-forward" size={24} color="white" />
+        </View>
+        
+       </Pressable> 
 
             <View style={styles.formEntryImage}>
            

@@ -15,6 +15,7 @@ import Loader from '../../components/loader'
 import { doc, getDoc, setDoc, serverTimestamp, updateDoc  } from "firebase/firestore";
 import { DestinationChoiceData, EmploymentStatusData, MaritalStatusData, RelativeData, TravelHistoryData } from "../../data";
 import { TouchableOpacity } from "react-native-gesture-handler";
+import { VisaContext } from "../../config/VisaContext";
 
 export default function TravelHistoryScreen({ navigation }) {
   
@@ -22,7 +23,13 @@ export default function TravelHistoryScreen({ navigation }) {
   const [loading, setLoading] = useState(false)
   const [travelled, setTravelled] = useState('travelled')
   const [haveRelative, setHaveRelative] = useState('haveRelative')
+  const [relativeName, setRelativeName] = useState('')
+  const [relativeAddress, setRelativeAddress] = useState('')
   const [refused, setRefused] = useState('refused')
+
+  const [errorReletiveName, setErrorRelativeName] = useState('');
+
+  const [errorRelativeAddress, setErrorRelativeAddress] = useState('');
 //   const [marriedStatus, setMarriedStatus] = useState(true)
 
     // React.useLayoutEffect(() => {
@@ -57,7 +64,347 @@ export default function TravelHistoryScreen({ navigation }) {
 
       const { user } = useContext(AuthContext)
 
+      const {visaId} = useContext(VisaContext)
+
       console.log(user.uid)
+
+
+      const handleMyTravel = async() => {
+
+        
+
+        if (travelled === 'travelled' && haveRelative === 'haveRelative' && refused === 'refused') {
+
+            if(relativeName === ""){
+
+              return setErrorRelativeName('Please enter field');
+              
+            }
+
+            if(relativeAddress === ""){
+
+              return setErrorRelativeAddress('Please enter field');
+              
+            }
+             
+            setLoading(true);
+
+            try {
+      
+              await updateDoc(doc(db, "visa", visaId), {
+      
+                  travelledBefore : travelled,
+                  haveRelative : haveRelative,
+                  relativeName : relativeName,
+                  relativeAddress : relativeAddress,
+                  refused : refused,
+                  timeStamp: serverTimestamp(),
+      
+              });
+
+              setLoading(false)
+                
+              navigation.navigate("DocumentsAvailableScreen");
+    
+            // .then(async() => {
+    
+            //   await updateDoc(doc(db, "travellers", user.uid), {
+    
+            //     surname: surname,
+            //     gender: gender,
+            //     socials: socials,
+            //     timeStamp: serverTimestamp(),
+    
+            //  })
+    
+            //  setLoading(false)
+              
+            //   navigation.navigate("MaritalAndEmploymentScreen");
+    
+            
+    
+          
+        } catch (error) {
+    
+          console.log('error:',error.message)
+    
+        }
+          
+        } 
+         
+
+        if (travelled === 'notTravelled' && haveRelative === 'dntHaveRelative' && refused === 'notRefused') {
+
+             
+
+          try {
+    
+            await updateDoc(doc(db, "visa", visaId), {
+    
+              travelledBefore : travelled,
+              haveRelative : haveRelative,
+              refused : refused,
+                timeStamp: serverTimestamp(),
+    
+            });
+
+            setLoading(false)
+              
+            navigation.navigate("EducationScreen");
+  
+          // .then(async() => {
+  
+          //   await updateDoc(doc(db, "travellers", user.uid), {
+  
+          //     surname: surname,
+          //     gender: gender,
+          //     socials: socials,
+          //     timeStamp: serverTimestamp(),
+  
+          //  })
+  
+          //  setLoading(false)
+            
+          //   navigation.navigate("MaritalAndEmploymentScreen");
+  
+          
+  
+        
+      } catch (error) {
+  
+        console.log('error:',error.message)
+  
+      }
+        
+        } 
+
+        if (travelled === 'travelled' && haveRelative === 'dntHaveRelative' && refused === 'refused') {
+
+             
+
+          try {
+    
+            await updateDoc(doc(db, "visa", visaId), {
+    
+              travelledBefore : travelled,
+              haveRelative : haveRelative,
+              refused : refused,
+              timeStamp: serverTimestamp(),
+    
+            });
+
+            setLoading(false)
+              
+            navigation.navigate("EducationScreen");
+  
+          // .then(async() => {
+  
+          //   await updateDoc(doc(db, "travellers", user.uid), {
+  
+          //     surname: surname,
+          //     gender: gender,
+          //     socials: socials,
+          //     timeStamp: serverTimestamp(),
+  
+          //  })
+  
+          //  setLoading(false)
+            
+          //   navigation.navigate("MaritalAndEmploymentScreen");
+  
+          
+  
+        
+      } catch (error) {
+  
+        console.log('error:',error.message)
+  
+      }
+        
+        } 
+
+        if (travelled === 'travelled' && haveRelative === 'dntHaveRelative' && refused === 'notRefused') {
+
+             
+
+          try {
+    
+            await updateDoc(doc(db, "visa", visaId), {
+    
+              travelledBefore : travelled,
+              haveRelative : haveRelative,
+              refused : refused,
+              timeStamp: serverTimestamp(),
+    
+            });
+
+            setLoading(false)
+              
+            navigation.navigate("EducationScreen");
+  
+        
+          } catch (error) {
+      
+            console.log('error:',error.message)
+      
+          }
+        
+        } 
+        
+        if (travelled === 'notTravelled' && haveRelative === 'haveRelative' && refused === 'notRefused') {
+
+             
+
+          try {
+    
+            await updateDoc(doc(db, "visa", visaId), {
+    
+              travelledBefore : travelled,
+              haveRelative : haveRelative,
+              relativeName : relativeName,
+              relativeAddress : relativeAddress,
+              refused : refused,
+              timeStamp: serverTimestamp(),
+    
+            });
+
+            setLoading(false)
+              
+            navigation.navigate("EducationScreen");
+  
+          // .then(async() => {
+  
+          //   await updateDoc(doc(db, "travellers", user.uid), {
+  
+          //     surname: surname,
+          //     gender: gender,
+          //     socials: socials,
+          //     timeStamp: serverTimestamp(),
+  
+          //  })
+  
+          //  setLoading(false)
+            
+          //   navigation.navigate("MaritalAndEmploymentScreen");
+  
+          
+  
+        
+      } catch (error) {
+  
+        console.log('error:',error.message)
+  
+      }
+        
+        } 
+
+        if (travelled === 'notTravelled' && haveRelative === 'dntHaveRelative' && refused === 'refused') {
+
+             
+
+          try {
+    
+            await updateDoc(doc(db, "visa", visaId), {
+    
+              travelledBefore : travelled,
+              haveRelative : haveRelative,
+              refused : refused,
+              timeStamp: serverTimestamp(),
+    
+            });
+
+            setLoading(false)
+              
+            navigation.navigate("EducationScreen");
+  
+          // .then(async() => {
+  
+          //   await updateDoc(doc(db, "travellers", user.uid), {
+  
+          //     surname: surname,
+          //     gender: gender,
+          //     socials: socials,
+          //     timeStamp: serverTimestamp(),
+  
+          //  })
+  
+          //  setLoading(false)
+            
+          //   navigation.navigate("MaritalAndEmploymentScreen");
+  
+          
+  
+        
+      } catch (error) {
+  
+        console.log('error:',error.message)
+  
+      }
+        
+        } 
+
+        if (travelled === 'travelled' && haveRelative === 'haveRelative' && refused === 'notRefused') {
+
+          if(relativeName === ""){
+
+            return setErrorRelativeName('Please enter field');
+            
+          }
+
+          if(relativeAddress === ""){
+
+            return setErrorRelativeAddress('Please enter field');
+            
+          }
+           
+          setLoading(true); 
+
+          try {
+    
+            await updateDoc(doc(db, "visa", visaId), {
+    
+              travelledBefore : travelled,
+              haveRelative : haveRelative,
+              relativeName : relativeName,
+              relativeAddress : relativeAddress,
+              refused : refused,
+              timeStamp: serverTimestamp(),
+    
+            });
+
+            setLoading(false)
+              
+            navigation.navigate("EducationScreen");
+  
+          // .then(async() => {
+  
+          //   await updateDoc(doc(db, "travellers", user.uid), {
+  
+          //     surname: surname,
+          //     gender: gender,
+          //     socials: socials,
+          //     timeStamp: serverTimestamp(),
+  
+          //  })
+  
+          //  setLoading(false)
+            
+          //   navigation.navigate("MaritalAndEmploymentScreen");
+  
+          
+  
+        
+      } catch (error) {
+  
+        console.log('error:',error.message)
+  
+      }
+        
+        } 
+
+        
+    
+      }
 
 
       // const getUser = async() => {
@@ -81,55 +428,55 @@ export default function TravelHistoryScreen({ navigation }) {
       // console.log(userData)
     
 
-    const handleMyProfile = async() => {
+  //   const handleMyProfile = async() => {
 
 
      
 
       
-    //   if(employmentLetter === null){
+  //   //   if(employmentLetter === null){
 
-    //     return setErrorMessage('Please choose an option');
+  //   //     return setErrorMessage('Please choose an option');
         
-    //   }
-    navigation.navigate("DocumentsAvailableScreen");
+  //   //   }
+  //   navigation.navigate("DocumentsAvailableScreen");
 
-    //     try {
+  //   //     try {
 
-    //       setLoading(true)
+  //   //       setLoading(true)
 
-    //        await updateDoc(doc(db, "travellers", user.uid), {
+  //   //        await updateDoc(doc(db, "travellers", user.uid), {
         
-    //    internationalPassport : internationalPassport,
+  //   //    internationalPassport : internationalPassport,
       
-    //    timeStamp: serverTimestamp(),
+  //   //    timeStamp: serverTimestamp(),
         
 
-    // }).then(() => {
-    //   setLoading(false)
-    //   // showToast()
-    //   // if (condition) {
+  //   // }).then(() => {
+  //   //   setLoading(false)
+  //   //   // showToast()
+  //   //   // if (condition) {
         
-    //   // } else {
+  //   //   // } else {
         
-    //   // }
-    //   navigation.navigate("UserInformationScreen");
+  //   //   // }
+  //   //   navigation.navigate("UserInformationScreen");
         
-    // })
-    // navigation.navigate("UserInformationScreen");
+  //   // })
+  //   // navigation.navigate("UserInformationScreen");
           
-    //     } catch (error) {
-    //       console.log('error:',error.message)
-    //     }
+  //   //     } catch (error) {
+  //   //       console.log('error:',error.message)
+  //   //     }
 
        
-    //   }else{
+  //   //   }else{
 
-    //     return setErrorMessage('Please select your visa Type');
+  //   //     return setErrorMessage('Please select your visa Type');
         
-    //   }
+  //   //   }
         
-  }
+  // }
 
 
   return (
@@ -213,9 +560,9 @@ export default function TravelHistoryScreen({ navigation }) {
 
 
 
-        {errorMessage &&
+        {/* {errorMessage &&
         <Text style={{color:'red', fontSize:10, marginVertical:5}}> {errorMessage}</Text>
-        }
+        } */}
 
         </View>
 
@@ -279,9 +626,9 @@ export default function TravelHistoryScreen({ navigation }) {
 
                 
 
-                {errorMessage &&
+                {/* {errorMessage &&
                 <Text style={{color:'red', fontSize:10, marginVertical:5}}> {errorMessage}</Text>
-                }
+                } */}
 
             </View> 
 
@@ -294,14 +641,26 @@ export default function TravelHistoryScreen({ navigation }) {
                         style={{ marginTop: 15 }}
                         label='relative name'
                         mode='outlined'
+                        value={relativeName}
+                        onChangeText={(e) => setRelativeName(e)}
                     />
+
+                      {errorReletiveName &&
+                        <Text style={{color:'red', fontSize:10, marginVertical:5}}> {errorReletiveName}</Text>
+                      }
 
                     <TextInput
                         type='text'
                         style={{ marginTop: 15 }}
                         label='relative address'
                         mode='outlined'
+                        value={relativeAddress}
+                        onChangeText={(e) => setRelativeAddress(e)}
                     />
+
+                      {errorRelativeAddress &&
+                        <Text style={{color:'red', fontSize:10, marginVertical:5}}> {errorRelativeAddress}</Text>
+                      }
 
               
                 </>
@@ -379,50 +738,18 @@ export default function TravelHistoryScreen({ navigation }) {
 
 
 
-        {errorMessage &&
-        <Text style={{color:'red', fontSize:10, marginVertical:5}}> {errorMessage}</Text>
-        }
+      
 
         </View> 
 
-        {/* {refused === 'refused'?
+      
 
-        <>
-
-            <TextInput
-                type='text'
-                style={{ marginTop: 15 }}
-                label='relative name'
-                mode='outlined'
-            />
-
-            <TextInput
-                type='text'
-                style={{ marginTop: 15 }}
-                label='relative address'
-                mode='outlined'
-            />
-
-
-        </>
-
-        :
-
-        ''
-
-        } */}
-
-
-
-        {/* {errorMessage &&
-        <Text style={{color:'red', fontSize:10, marginVertical:5}}> {errorMessage}</Text>
-        } */}
 
      </View>
 
 
     </ScrollView>
-      <Pressable onPress = {handleMyProfile}  style = {{ backgroundColor : 'brown', width : '100%', marginBottom : 20, alignItems : 'center', justifyContent : 'center',paddingVertical : 20, flexDirection : 'row',}}>
+      <Pressable onPress = {handleMyTravel}  style = {{ backgroundColor : 'brown', width : '100%', marginBottom : 20, alignItems : 'center', justifyContent : 'center',paddingVertical : 20, flexDirection : 'row',}}>
         <Text style={{color : 'white', fontSize : 18, marginRight : 10}}>Next</Text>
         <View style = {{ alignItems : 'center', flexDirection : 'row', width : 17}}>
           <Ionicons name="chevron-forward" size={24} color="white" />

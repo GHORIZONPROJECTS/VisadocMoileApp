@@ -7,6 +7,7 @@ import CountryPicker from 'react-native-country-picker-modal'
 import { MaterialIcons, Ionicons } from '@expo/vector-icons';
 import { AuthContext } from '../../config/AuthContext'
 import {serverTimestamp, doc, getDoc, setDoc, updateDoc, addDoc, collection, onSnapshot } from "firebase/firestore";
+import { VisaContext } from '../../config/VisaContext';
 
 
 
@@ -23,6 +24,8 @@ const DestinationCountryScreen = ({navigation}) => {
   const [country, setCountry] = useState('Canada')
   const [error, setError] = useState(false)
   // const [loading, setLoading] = useState(false)
+
+  const { dispatch } = useContext(VisaContext)
   
   const { user } = useContext(AuthContext)
 
@@ -54,6 +57,7 @@ const DestinationCountryScreen = ({navigation}) => {
   const handleCountrySelect = country => {
 
       setCountryCode(country.cca2)
+      
       setCountry(country.name)
 
   }
@@ -62,17 +66,28 @@ const DestinationCountryScreen = ({navigation}) => {
 
     try {
 
-      const orderData =  await addDoc(collection(db, "order"), {
 
-      // await db.collection("visaRequest").doc(user.uid).set({
-        userId : user.uid,
-        country : country,
-        timeStamp: serverTimestamp(),
-      
-      }).then(function() {
-        console.log(" created");
+// Add a new document with a generated id.
+        const docRef = await addDoc(collection(db, "visa"), {
+
+          country : country,
+
+          userId : user.uid,
+
+          timeStamp: serverTimestamp(),
+
+        });
+
+
+        const visaId = docRef.id
+
+        dispatch({type:"APPLICANT", payload:visaId})
+
         navigation.navigate('PurposeOfTravelScreen')
-      });
+        
+      
+
+      
       
     } catch (error) {
 
@@ -80,29 +95,6 @@ const DestinationCountryScreen = ({navigation}) => {
 
     }
 
-  //   try{
-      
-  //     // await updateDoc(doc(db, "travellers", user.uid), {
-  //       await setDoc(doc(db, "visa", user.uid), {
-        
-  //       country : country,
-  //       timeStamp: serverTimestamp(),
-        
-
-  //   }).then(() => {
-  //     // setLoading(false)
-  //     // showToast()
-  //     navigation.navigate('PurposeOfTravelScreen')
-
-        
-  //   })
-
-  
-          
-  // }catch(error){
-
-  //   console.log(error.message);
-  // }
 
    
   }
@@ -151,7 +143,6 @@ const DestinationCountryScreen = ({navigation}) => {
             <View style={{marginVertical: 10, width:'100%', height: 80, borderRadius: 5 }}>
 
               <CountryPicker
-
                 onSelect={handleCountrySelect}
                 withCountryNameButton={true}
                 withFilter

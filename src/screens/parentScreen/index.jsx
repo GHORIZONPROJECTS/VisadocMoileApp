@@ -7,7 +7,7 @@ import { Text, View, StyleSheet, Alert, Pressable, Image, ScrollView } from "rea
 import { Button, Divider, MD3Colors, ProgressBar, TextInput } from "react-native-paper";
 import { useIsFocused } from "@react-navigation/native";
 import { COLORS, SIZES } from "../../constants/theme";
-import { FontAwesome, Ionicons} from '@expo/vector-icons'
+import { FontAwesome, Ionicons, AntDesign} from '@expo/vector-icons'
 import BackArrow from '../../components/backArrow'
 import { auth, db } from '../../firebase';
 import { AuthContext } from '../../config/AuthContext'
@@ -15,44 +15,145 @@ import Loader from '../../components/loader'
 import { doc, getDoc, setDoc, serverTimestamp, updateDoc  } from "firebase/firestore";
 import { EmploymentStatusData, MaritalStatusData, fatherData, motherData } from "../../data";
 import { TouchableOpacity } from "react-native-gesture-handler";
+import DateTimePicker from '@react-native-community/datetimepicker';
+import { VisaContext } from "../../config/VisaContext";
+import DropDown from "react-native-paper-dropdown";
+
+const MaritalStatusList = [
+  {
+    label: "Married",
+    value: "married",
+  },
+  {
+    label: "Divorced",
+    value: "divorced",
+  },
+  {
+    label: "Seperated",
+    value: "seperated",
+  },
+];
 
 export default function ParentScreen({ navigation }) {
   
-  const [errorMessage, setErrorMessage] = useState('')
+  // const [errorMessage, setErrorMessage] = useState('')
   const [loading, setLoading] = useState(false)
   const [motherAlive, setMotherAlive] = useState('motherAlive')
   const [fatherAlive, setFatherAlive] = useState('fatherAlive')
-//   const [marriedStatus, setMarriedStatus] = useState(true)
 
-    // React.useLayoutEffect(() => {
-    //     navigation.setOptions({
-    //       headerLeft: () => null,
-    //     });
-    // }, [navigation]);
+  const [fatherFirstname, setFatherFirstname] = useState("")
 
-    // const {
-    //     handleSubmit,
-    //     control,
-    //     formState: { errors },
-    //   } = useForm({ defaultValues: WizardStore.useState((s) => s) });
-    //   const isFocused = useIsFocused();
+  const [fatherLastname, setFatherLastname] = useState("")
+
+  const [fatherAddress, setFatherAddress] = useState("")
+
+  const [fatherMaritalStatus, setFatherMaritalStatus] = useState("")
+
+
+  const [errorFatherFirstname, setErrorFatherFirstname] = useState("")
+
+  const [errorFatherLastname, setErrorFatherLastname] = useState("")
+
+  const [errorFatherAddress, setErrorFatherAddress] = useState("")
+
+  const [errorFatherMaritalStatus, setErrorFatherMaritalStatus] = useState("")
+  
+  const [errorDateOfBirthFather, setErrorDateOfBirthFather] = useState('');
+
+  const [errorMotherFirstname, setErrorMotherFirstname] = useState("")
+
+  const [errorMotherLastname, setErrorMotherLastname] = useState("")
+
+  const [errorMotherAddress, setErrorMotherAddress] = useState("")
+
+  const [errorMotherMaritalStatus, setErrorMotherMaritalStatus] = useState("")
+  
+  const [errorDateOfBirthMother, setErrorDateOfBirthMother] = useState('');
+
+
+
+
+  const [motherFirstname, setMotherFirstname] = useState("")
+
+  const [motherLastname, setMotherLastname] = useState("")
+
+ const [motherAddress, setMotherAddress] = useState("")
+
+  const [motherMaritalStatus, setMotherMaritalStatus] = useState("")
+
+  const [showPickerFather, setShowPickerFather] = useState(false);
+
+  const [showPickerMother, setShowPickerMother] = useState(false);
+
+  const [dateFather, setDateFather] = useState(new Date());
+
+  const [dateMother, setDateMother] = useState(new Date());
+
+  const {visaId} = useContext(VisaContext)
+
+  const [dateOfBirthFather, setDateOfBirthFather] = useState('');
+
+
+  const [dateOfBirthMother, setDateOfBirthMother] = useState('');
+
+  const [showDropDownFather, setShowDropDownFather] = useState(false);
+
+  const [showDropDownMother, setShowDropDownMother] = useState(false);
+
+//Father
+
+  const toggleDatePickerFather = () => {
+    setShowPickerFather(!showPickerFather)
+  }
+
+  const onChangeDateFather = ({type}, selectedDate ) => {
+      if(type == 'set'){
+        const currentDate = selectedDate;
+        setDateFather(currentDate)
+
+        if(Platform.OS ==='android'){
+          toggleDatePickerFather();
+          setDateOfBirthFather(currentDate.toDateString());
+        }
+
+      }else{
+        toggleDatePickerFather();
+      }
+  }
+
+  const confirmIOSDateFather = () => {
+    setDateOfBirthFather(date.toDateString());
+    toggleDatePickerFather();
     
-    //   useEffect(() => {
-    //     isFocused &&
-    //       WizardStore.update((s) => {
-    //         s.progress = 0;
-    //       });
+  }
+
+
+  // Mother Date Info
+
+  const toggleDatePickerMother = () => {
+    setShowPickerMother(!showPickerMother)
+  }
+
+  const onChangeDateMother = ({type}, selectedDate ) => {
+      if(type == 'set'){
+        const currentDate = selectedDate;
+        setDateMother(currentDate)
+
+        if(Platform.OS ==='android'){
+          toggleDatePickerMother();
+          setDateOfBirthMother(currentDate.toDateString());
+        }
+
+      }else{
+        toggleDatePickerMother();
+      }
+  }
+
+  const confirmIOSDateMother = () => {
+    setDateOfBirthMother(date.toDateString());
+    toggleDatePickerMother();
     
-    //   }, [isFocused]);
-    
-    //   const onSubmit = (internationalPassport) => {
-    //     WizardStore.update((s) => {
-    //       s.progress = 33;
-    //       s.service = internationalPassport.value;
-    //       // s.age = data.age;
-    //     });
-    //     navigation.navigate("");
-    //   };
+  }
 
       const { user } = useContext(AuthContext)
 
@@ -60,91 +161,334 @@ export default function ParentScreen({ navigation }) {
 
 
 
-    //   const handleAdd = () => {
+      const handleParent = async() => {
+
+        if (fatherAlive === 'fatherAlive' && motherAlive === 'motherAlive') {
+
+
+          if(fatherFirstname === ""){
+
+            return setErrorFatherFirstname('Please required field');
             
-    //     setChildren([...children, {firstname : "" , surname : ""}])
+          }
 
-    // }
+          if(fatherLastname === ""){
 
-    //    const handleDelete = (i) => {
+            return setErrorFatherLastname('Please required field');
             
-    //     const deleteVal = [...children]
-    //     deleteVal.splice(i, 1)
-    //     setChildren(deleteVal)
-
-    // }
-    
-    
-      // const getUser = async() => {
-      //   const docRef = doc(db, "travellers", user.uid);
-      //     const docSnap = await getDoc(docRef);
+          }
           
-      //     if (docSnap.exists()) {
-    
-      //       setUserData(docSnap.data())
+          if(fatherAddress === ""){
+
+            return setErrorFatherAddress('Please enter field');
             
-      //     } else {
+          }
+
+          if(fatherMaritalStatus === ""){
+
+            return setErrorFatherMaritalStatus('Please enter field');
+            
+          }
+
+          if(dateOfBirthFather === ""){
+
+            return setErrorDateOfBirthFather('Please enter field');
+            
+          }
+        
+          
+          if(motherFirstname === ""){
+
+            return setErrorMotherFirstname('Please enter field');
+            
+          }
+
+          if(motherLastname === ""){
+
+            return setErrorMotherLastname('Please enter field');
+            
+          }
+          
+          if(motherAddress === ""){
+
+            return setErrorMotherAddress('Please enter field');
+            
+          }
+
+          if(motherMaritalStatus === ""){
+
+            return setErrorMotherMaritalStatus('Please enter field');
+            
+          }
+
+          if(dateOfBirthMother === ""){
+
+            return setErrorDateOfBirthMother('Please enter field');
+            
+          }
+
+          setLoading(true);
+
+            try {
+      
+              await updateDoc(doc(db, "visa", visaId), {
+      
+                  fatherFirstname : fatherFirstname,
+                  fatherLastname: fatherLastname,
+                  fatherAddress : fatherAddress,
+                  dateOfBirthFather : dateOfBirthFather,
+                  fatherMaritalStatus : fatherMaritalStatus,
+                  motherFirstname : motherFirstname,
+                  motherLastname: motherLastname,
+                  motherAddress : motherAddress,
+                  dateOfBirthMother : dateOfBirthMother,
+                  motherMaritalStatus : motherMaritalStatus,
+
+                  // children: children,
+                  timeStamp: serverTimestamp(),
+      
+              });
+
+              setLoading(false)
+                
+              navigation.navigate("EducationScreen");
     
-      //       console.log("No such document!");
-      //     }
-      // }
+       
+        } catch (error) {
     
-      // useEffect(()=>{
-      //   getUser()
-      // }, [])
+          console.log('error:',error.message)
     
-      // console.log(userData)
+        }
+          
+        } 
+         
+
+        if (fatherAlive === 'fatherAlive' && motherAlive === '') {
+
+          if(fatherFirstname === ""){
+
+            return setErrorFatherFirstname('Please required field');
+            
+          }
+
+          if(fatherLastname === ""){
+
+            return setErrorFatherLastname('Please required field');
+            
+          }
+          
+          if(fatherAddress === ""){
+
+            return setErrorFatherAddress('Please enter field');
+            
+          }
+
+          if(fatherMaritalStatus === ""){
+
+            return setErrorFatherMaritalStatus('Please enter field');
+            
+          }
+
+          if(dateOfBirthFather === ""){
+
+            return setErrorDateOfBirthFather('Please enter field');
+            
+          }
+        
+          
+         
+          setLoading(true); 
+
+          try {
+    
+            await updateDoc(doc(db, "visa", visaId), {
+    
+                fatherFirstname : fatherFirstname,
+                fatherLastname: fatherLastname,
+                fatherAddress : fatherAddress,
+                dateOfBirthFather : dateOfBirthFather,
+                fatherMaritalStatus : fatherMaritalStatus,
+                motherFirstname : motherFirstname,
+                motherLastname: motherLastname,
+                motherAddress : motherAddress,
+                dateOfBirthMother : dateOfBirthMother,
+                motherMaritalStatus : motherMaritalStatus,
+                timeStamp: serverTimestamp(),
+    
+            });
+
+            setLoading(false)
+              
+            navigation.navigate("EducationScreen");
+        
+      } catch (error) {
+  
+        console.log('error:',error.message)
+  
+      }
+        
+        } 
+
+        if (fatherAlive === '' && motherAlive === 'motherAlive') {
+
+          
+          if(motherFirstname === ""){
+
+            return setErrorMotherFirstname('Please enter field');
+            
+          }
+
+          if(motherLastname === ""){
+
+            return setErrorMotherLastname('Please enter field');
+            
+          }
+          
+          if(motherAddress === ""){
+
+            return setErrorMotherAddress('Please enter field');
+            
+          }
+
+          if(motherMaritalStatus === ""){
+
+            return setErrorMotherMaritalStatus('Please enter field');
+            
+          }
+
+          if(dateOfBirthMother === ""){
+
+            return setErrorDateOfBirthMother('Please enter field');
+            
+          }
+
+          
+
+          setLoading(true);   
+
+          try {
+    
+            await updateDoc(doc(db, "visa", visaId), {
+
+                fatherFirstname : fatherFirstname,
+                fatherLastname: fatherLastname,
+                fatherAddress : fatherAddress,
+                dateOfBirthFather : dateOfBirthFather,
+                fatherMaritalStatus : fatherMaritalStatus,
+                motherFirstname : motherFirstname,
+                motherLastname: motherLastname,
+                motherAddress : motherAddress,
+                dateOfBirthMother : dateOfBirthMother,
+                motherMaritalStatus : motherMaritalStatus,
+                timeStamp: serverTimestamp(),
+    
+            });
+
+            setLoading(false)
+              
+            navigation.navigate("EducationScreen");
+  
+       
+        
+      } catch (error) {
+  
+        console.log('error:',error.message)
+  
+      }
+        
+        } 
+
+        if (fatherAlive === '' && motherAlive === '') {
+
+          setLoading(true);  
+
+          try {
+    
+            await updateDoc(doc(db, "visa", visaId), {
+
+              fatherFirstname : fatherFirstname,
+              fatherLastname: fatherLastname,
+              fatherAddress : fatherAddress,
+              dateOfBirthFather : dateOfBirthFather,
+              fatherMaritalStatus : fatherMaritalStatus,
+              motherFirstname : motherFirstname,
+              motherLastname: motherLastname,
+              motherAddress : motherAddress,
+              dateOfBirthMother : dateOfBirthMother,
+              motherMaritalStatus : motherMaritalStatus,
+              timeStamp: serverTimestamp(),
+  
+          });
+
+          setLoading(false)
+            
+          navigation.navigate("EducationScreen");
+  
+        
+          } catch (error) {
+      
+            console.log('error:',error.message)
+      
+          }
+        
+        } 
+        
+         
+
+        
+    
+      }
     
 
-    const handleAvailableDocuments = async() => {
+  //   const handleParent = async() => {
 
 
      
 
       
-    //   if(employmentLetter === null){
+  //   //   if(employmentLetter === null){
 
-    //     return setErrorMessage('Please choose an option');
+  //   //     return setErrorMessage('Please choose an option');
         
-    //   }
-    navigation.navigate("TravelHistoryScreen");
+  //   //   }
+  //   navigation.navigate("TravelHistoryScreen");
 
-    //     try {
+  //   //     try {
 
-    //       setLoading(true)
+  //   //       setLoading(true)
 
-    //        await updateDoc(doc(db, "travellers", user.uid), {
+  //   //        await updateDoc(doc(db, "travellers", user.uid), {
         
-    //    internationalPassport : internationalPassport,
+  //   //    internationalPassport : internationalPassport,
       
-    //    timeStamp: serverTimestamp(),
+  //   //    timeStamp: serverTimestamp(),
         
 
-    // }).then(() => {
-    //   setLoading(false)
-    //   // showToast()
-    //   // if (condition) {
+  //   // }).then(() => {
+  //   //   setLoading(false)
+  //   //   // showToast()
+  //   //   // if (condition) {
         
-    //   // } else {
+  //   //   // } else {
         
-    //   // }
-    //   navigation.navigate("UserInformationScreen");
+  //   //   // }
+  //   //   navigation.navigate("UserInformationScreen");
         
-    // })
-    // navigation.navigate("UserInformationScreen");
+  //   // })
+  //   // navigation.navigate("UserInformationScreen");
           
-    //     } catch (error) {
-    //       console.log('error:',error.message)
-    //     }
+  //   //     } catch (error) {
+  //   //       console.log('error:',error.message)
+  //   //     }
 
        
-    //   }else{
+  //   //   }else{
 
-    //     return setErrorMessage('Please select your visa Type');
+  //   //     return setErrorMessage('Please select your visa Type');
         
-    //   }
+  //   //   }
         
-  }
+  // }
 
 
   return (
@@ -226,9 +570,7 @@ export default function ParentScreen({ navigation }) {
 
                 
 
-                {errorMessage &&
-                <Text style={{color:'red', fontSize:10, marginVertical:5}}> {errorMessage}</Text>
-                }
+               
 
             </View> 
 
@@ -241,35 +583,185 @@ export default function ParentScreen({ navigation }) {
                         style={{ marginTop: 15 }}
                         label='firstname'
                         mode='outlined'
+                        value={fatherFirstname}
+                        onChangeText={(e) => setFatherFirstname(e)}
                     />
+                      {errorFatherFirstname &&
+                        <Text style={{color:'red', fontSize:10, marginVertical:5}}> {errorFatherFirstname}</Text>
+                      }
 
                     <TextInput
                         type='text'
                         style={{ marginTop: 15 }}
                         label='Lastname'
                         mode='outlined'
+                        value={fatherLastname}
+                        onChangeText={(e) => setFatherLastname(e)}
                     />
+                      {errorFatherLastname &&
+                        <Text style={{color:'red', fontSize:10, marginVertical:5}}> {errorFatherLastname}</Text>
+                      }
 
                     <TextInput
                         type='text'
                         style={{ marginTop: 15 }}
                         label='Home Address'
                         mode='outlined'
+                        value={fatherAddress}
+                        onChangeText={(e) => setFatherAddress(e)}
                     />
+                      {errorFatherAddress &&
+                        <Text style={{color:'red', fontSize:10, marginVertical:5}}> {errorFatherAddress}</Text>
+                      }
 
-                    <TextInput
-                        type='text'
-                        style={{ marginTop: 15 }}
-                        label='Date of birth'
-                        mode='outlined'
+                <View style={{ alignItems:'center', justifyContent:'flex-start', width:318, borderRadius:5,  marginVertical:10, borderBottomWidth:0, position:'relative' }}>
+
+                    {showPickerFather && (
+
+                      <DateTimePicker
+                        
+                        mode='date'
+                        display='spinner'
+                        value={dateFather}
+                        onChange = {onChangeDateFather}
+                        style={{height:70, marginTop:-10, width:'100%'}}
+                      />
+
+                    )
+                    }
+
+                    {showPickerFather && Platform.OS === 'ios' && (
+                        <View
+                          style={{
+                            flexDirection:'row',
+                            justifyContent:'space-between'
+                          }}
+                        >
+                            <TouchableOpacity
+                              style={{
+                                backgroundColor:'#11182711', paddingHorizontal:20, height:50,
+                                justifyContent:'center', alignItems:'center', borderRadius:50,
+                                marginTop:10, marginBottom:15
+                              }}
+
+                              onPress={toggleDatePickerFather}
+                            >
+                              <Text
+                                style={{
+                                  color:'#075985',
+                                  fontSize:14,
+                                  fontWeight:"500"
+                                }}
+                              >Cancel</Text>
+                            </TouchableOpacity>
+
+                            <TouchableOpacity
+                              style={{
+                                backgroundColor:COLORS.main, paddingHorizontal:20, height:50,
+                                justifyContent:'center', alignItems:'center', borderRadius:50,
+                                marginTop:10, marginBottom:15
+                              }}
+
+                              onPress={confirmIOSDateFather}
+                            >
+                              <Text
+                                style={{
+                                  color:'#fff',
+                                  fontSize:14,
+                                  fontWeight:"500"
+                                }}
+                              >Confirm</Text>
+                            </TouchableOpacity>
+                        </View>
+                    )}
+
+
+
+                    {!showPickerFather && (
+
+                    <Pressable
+                        onPress={toggleDatePickerFather}
+                        >
+                        <TextInput
+                          mode="outlined"
+                          placeholder='Date of Birth'
+                          label='Date of Birth'
+                          value={dateOfBirthFather}
+                          onChangeText = {e => setDateOfBirthFather(e)}
+                          placeholderTextColor='#000'
+                          editable={false}
+                          style={{
+                              color:!showPickerFather && 'black',width:316, borderBottomWidth:0
+                          }}
+                          onPressIn={toggleDatePickerFather}
+                        />
+                    </Pressable>
+
+                    )
+
+                    }
+
+                  <View style={{position:"absolute",width:30, height:30, top:15, right:5 }}>
+                  <AntDesign name="calendar" size={24} color="black" />
+                  </View>
+
+                  {errorDateOfBirthFather &&
+                    <Text style={{color:'red', fontSize:10, marginVertical:5}}> {errorDateOfBirthFather}</Text>
+                  }
+
+                </View> 
+
+                <View style={[styles.formEntry, {position:'relative'}]}>
+                    <DropDown
+                      label={"Marital Status"}
+                      mode={"outlined"}
+                      visible={showDropDownFather}
+                      showDropDown={() => setShowDropDownFather(true)}
+                      onDismiss={() => setShowDropDownFather(false)}
+                      // onBlur={onBlur}
+                      onChangeText = {e => setFatherMaritalStatus(e)}
+                      value={fatherMaritalStatus}
+                      setValue={setFatherMaritalStatus}
+                      list={MaritalStatusList}
+                      dropDownStyle={{
+                        // borderColor: '#322b7c',
+                        // borderWidth: 0.7,
+                        borderRadius: 4,
+                        borderStyle: 'solid',
+                        // backgroundColor: 'yellow',
+                        marginTop:20
+                      }}
+                      // inputProps={{
+                      //   style:{
+                      //     // width:90,
+                      //     backgroundColor: 'rgb(252,243,207)',
+                      //     margin:0, padding:0
+
+                      //     // height:20
+                      //   }
+                      // }}
+                    //   dropDownStyle={{
+                    //     width:'100%', margin:0, padding:0,
+                    //     backgroundColor: 'rgb(252,243,207)',
+                    // }}
                     />
+                  <View style={{position:"absolute",width:30, height:30, top:20, right:5 }}>
+                  
+                  </View>
+                  
+                  {errorFatherMaritalStatus &&
+                    <Text style={{color:'red', fontSize:10, marginVertical:5}}> {errorFatherMaritalStatus}</Text>
+                  }
+              </View>
 
-                    <TextInput
+                    {/* <TextInput
                         type='text'
                         style={{ marginTop: 15 }}
                         label='Marital status(married/divorced/separeated/widowed)'
                         mode='outlined'
-                    />
+                        value={fatherMaritalStatus}
+                        onChangeText={(e) => setFatherMaritalStatus(e)}
+                    /> */}
 
                   
                 </>
@@ -348,11 +840,7 @@ export default function ParentScreen({ navigation }) {
 
                 </View>
 
-                
-
-                {errorMessage &&
-                <Text style={{color:'red', fontSize:10, marginVertical:5}}> {errorMessage}</Text>
-                }
+            
 
             </View> 
 
@@ -365,35 +853,174 @@ export default function ParentScreen({ navigation }) {
                         style={{ marginTop: 15 }}
                         label='firstname'
                         mode='outlined'
+                        value={motherFirstname}
+                        onChangeText={(e) => setMotherFirstname(e)}
                     />
+                      {errorMotherFirstname &&
+                        <Text style={{color:'red', fontSize:10, marginVertical:5}}> {errorMotherFirstname}</Text>
+                      }
 
                     <TextInput
                         type='text'
                         style={{ marginTop: 15 }}
                         label='Lastname'
                         mode='outlined'
+                        value={motherLastname}
+                        onChangeText={(e) => setMotherLastname(e)}
                     />
+
+                      {errorMotherLastname &&
+                        <Text style={{color:'red', fontSize:10, marginVertical:5}}> {errorMotherLastname}</Text>
+                      }
 
                     <TextInput
                         type='text'
                         style={{ marginTop: 15 }}
                         label='Home Address'
                         mode='outlined'
+                        value={motherAddress}
+                        onChangeText={(e) => setMotherAddress(e)}
                     />
 
-                    <TextInput
-                        type='text'
-                        style={{ marginTop: 15 }}
-                        label='Date of birth'
-                        mode='outlined'
+                  {errorMotherAddress &&
+                    <Text style={{color:'red', fontSize:10, marginVertical:5}}> {errorMotherAddress}</Text>
+                  }
+
+                    <View style={{ alignItems:'center', justifyContent:'flex-start', width:318, borderRadius:5,  marginVertical:10, borderBottomWidth:0, position:'relative' }}>
+
+                  {showPickerMother && (
+
+                    <DateTimePicker
+                      
+                      mode='date'
+                      display='spinner'
+                      value={dateMother}
+                      onChange = {onChangeDateMother}
+                      style={{height:70, marginTop:-10, width:'100%'}}
                     />
 
-                    <TextInput
+                  )
+                  }
+
+                  {showPickerMother && Platform.OS === 'ios' && (
+                      <View
+                        style={{
+                          flexDirection:'row',
+                          justifyContent:'space-between'
+                        }}
+                      >
+                          <TouchableOpacity
+                            style={{
+                              backgroundColor:'#11182711', paddingHorizontal:20, height:50,
+                              justifyContent:'center', alignItems:'center', borderRadius:50,
+                              marginTop:10, marginBottom:15
+                            }}
+
+                            onPress={toggleDatePickerMother}
+                          >
+                            <Text
+                              style={{
+                                color:'#075985',
+                                fontSize:14,
+                                fontWeight:"500"
+                              }}
+                            >Cancel</Text>
+                          </TouchableOpacity>
+
+                          <TouchableOpacity
+                            style={{
+                              backgroundColor:COLORS.main, paddingHorizontal:20, height:50,
+                              justifyContent:'center', alignItems:'center', borderRadius:50,
+                              marginTop:10, marginBottom:15
+                            }}
+
+                            onPress={confirmIOSDateMother}
+                          >
+                            <Text
+                              style={{
+                                color:'#fff',
+                                fontSize:14,
+                                fontWeight:"500"
+                              }}
+                            >Confirm</Text>
+                          </TouchableOpacity>
+                      </View>
+                  )}
+
+
+
+                      {!showPickerMother && (
+
+                      <Pressable
+                          onPress={toggleDatePickerMother}
+                          >
+                          <TextInput
+                            mode="outlined"
+                            placeholder='Date of Birth'
+                            label='Date of Birth'
+                            value={dateOfBirthMother}
+                            onChangeText = {e => setDateOfBirthMother(e)}
+                            placeholderTextColor='#000'
+                            editable={false}
+                            style={{
+                                color:!showPickerMother && 'black',width:316, borderBottomWidth:0
+                            }}
+                            onPressIn={toggleDatePickerMother}
+                          />
+                      </Pressable>
+
+                      )
+
+                      }
+
+                    <View style={{position:"absolute",width:30, height:30, top:15, right:5 }}>
+                      <AntDesign name="calendar" size={24} color="black" />
+                    </View>
+
+                    {errorDateOfBirthMother &&
+                            <Text style={{color:'red', fontSize:10, marginVertical:5}}> {errorDateOfBirthMother}</Text>
+                    }
+
+                    </View> 
+
+
+                    <View style={[styles.formEntry, {position:'relative', width:316}]}>
+                    <DropDown
+                      label={"Marital Status"}
+                      mode={"outlined"}
+                      visible={showDropDownMother}
+                      showDropDown={() => setShowDropDownMother(true)}
+                      onDismiss={() => setShowDropDownMother(false)}
+                      // onBlur={onBlur}
+                      onChangeText = {e => setMotherMaritalStatus(e)}
+                      value={motherMaritalStatus}
+                      setValue={setMotherMaritalStatus}
+                      list={MaritalStatusList}
+                      dropDownStyle={{
+                        // borderColor: '#322b7c',
+                        // borderWidth: 0.7,
+                        borderRadius: 4,
+                        borderStyle: 'solid',
+                        // backgroundColor: 'yellow',
+                        marginTop:20
+                      }}
+                  
+                    />
+                  
+                  
+                  {errorMotherMaritalStatus &&
+                    <Text style={{color:'red', fontSize:10, marginVertical:5}}> {errorMotherMaritalStatus}</Text>
+                  }
+                    </View>
+
+                    {/* <TextInput
                         type='text'
                         style={{ marginTop: 15 }}
                         label='Marital status(married/divorced/separeated/widowed)'
                         mode='outlined'
-                    />
+                        value={motherMaritalStatus}
+                        onChangeText={(e) => setMotherMaritalStatus(e)}
+                    /> */}
 
                 
                 </>
@@ -406,11 +1033,6 @@ export default function ParentScreen({ navigation }) {
 
 
 
-        {/* {errorMessage &&
-        <Text style={{color:'red', fontSize:10, marginVertical:5}}> {errorMessage}</Text>
-        } */}
-
-
 
         </View> 
 
@@ -419,7 +1041,7 @@ export default function ParentScreen({ navigation }) {
 
      </View>
     </ScrollView>
-      <Pressable onPress = {handleAvailableDocuments}  style = {{ backgroundColor : 'brown', width : '100%', marginBottom : 20, alignItems : 'center', justifyContent : 'center',paddingVertical : 20, flexDirection : 'row',}}>
+      <Pressable onPress = {handleParent}  style = {{ backgroundColor : 'brown', width : '100%', marginBottom : 20, alignItems : 'center', justifyContent : 'center',paddingVertical : 20, flexDirection : 'row',}}>
         <Text style={{color : 'white', fontSize : 18, marginRight : 10}}>Next</Text>
         <View style = {{ alignItems : 'center', flexDirection : 'row', width : 17}}>
           <Ionicons name="chevron-forward" size={24} color="white" />
@@ -455,7 +1077,7 @@ const styles = StyleSheet.create({
       color : 'white'
     },
     formEntry: {
-      margin: 8,
+      // margin: 8,
     },
     container: {
       flex: 1,
@@ -468,19 +1090,7 @@ const styles = StyleSheet.create({
       paddingHorizontal: 0,
     },
 
-    selected:{
-      // width:250,
-      // height:150,
-      // alignItems:'center',
-      // justifyContent:'center',
-      // gap:10,
-      // margin:10,
-      // borderWidth:1,
-      // borderRadius:10,
-      // borderColor:'lightgray',
-      // backgroundColor: internationalPassport == item.value? COLORS.main : 'white'
-
-    },
+  
 
     itemImage:{
       width:200,

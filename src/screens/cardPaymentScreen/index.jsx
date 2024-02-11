@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef} from "react";
+
 import { Text, View, StyleSheet, ScrollView, Pressable, TouchableOpacity, TextInput } from "react-native";
 // import Constants from "expo-constants";
 // import { SubmitHandler, useForm, Controller } from "react-hook-form";
@@ -10,9 +10,75 @@ import { COLORS, SIZES } from "../../constants/theme";
 import { Paystack }  from 'react-native-paystack-webview';
 // import { RootSiblingParent } from "react-native-root-siblings";
 // import Toast from "react-native-root-toast";
+import React, { useState, useEffect, useContext } from "react";
+import BackArrow from '../../components/backArrow'
+import { FontAwesome, Ionicons} from '@expo/vector-icons'
+import { auth, db } from '../../firebase';
+import { AuthContext } from '../../config/AuthContext'
+import Loader from '../../components/loader'
+import { doc, getDoc, setDoc, serverTimestamp, updateDoc  } from "firebase/firestore";
+import { VisaContext } from "../../config/VisaContext";
 
 
 export default function CardPaymentScreen({ navigation }) {
+
+  
+  const [userData, setUserData] = useState({})
+  const [image, setImage] = useState(null)  
+  const [uploading, setUploading] = useState(false)
+  const [visaData, setVisaData] = useState({})
+  const [fullname, setFullname] = useState("")
+  const [email, setEmail] = useState("")
+  const [phoneNumber, setPhoneNumber] = useState("")
+  // const [amount, setAmount] = useState("")
+
+
+  const { user } = useContext(AuthContext)
+
+  const {visaId} = useContext(VisaContext)
+
+  const getUserData = async() => {
+    const docRef = doc(db, "travellers", user.uid);
+      const docSnap = await getDoc(docRef);
+      
+      if (docSnap.exists()) {
+
+        setUserData(docSnap.data())
+        
+      } else {
+
+        console.log("No such document!");
+      }
+  }
+
+  useEffect(()=>{
+    getUserData()
+  }, [])
+
+
+  const getVisaData = async() => {
+      const docRef = doc(db, "visa", visaId);
+        const docSnap = await getDoc(docRef);
+        
+        if (docSnap.exists()) {
+  
+          setVisaData(docSnap.data())
+          
+        } else {
+  
+          console.log("No such document!");
+        }
+    }
+  
+    useEffect(()=>{
+      getVisaData()
+    }, [])
+
+    console.log(visaData)
+
+    const handleOnchange = (text) => {
+      
+    }
 
 //   const information = WizardStore.useState();
 
@@ -126,28 +192,32 @@ export default function CardPaymentScreen({ navigation }) {
           <TextInput
             style={styles.input}
             placeholder="Billing Name"
-            onChangeText={(text) => handleOnchange(text, "billingName")}
-            // value={billingDetail?.billingName}
+            value={`${visaData.firstname}  ${visaData.surname} `}
+            onChangeText={text => setFullname(text)}
           />
           <TextInput
             style={styles.input}
             placeholder="Billing Email"
-            onChangeText={(text) => handleOnchange(text, "billingEmail")}
-            // value={billingDetail?.billingEmail}
+            value={user.email}
+            onChangeText={text => setEmail(text)}
           />
           <TextInput
             style={styles.input}
             placeholder="Billing Mobile"
-            onChangeText={(text) => handleOnchange(text, "billingMobile")}
-            // value={billingDetail?.billingMobile}
+            onChangeText={(text) => setPhoneNumber(text)}
+            value={visaData.phoneNumber}
           />
-          <TextInput
+
+          <View style={{width:'100%', height:50, backgroundColor: '#00000011', marginVertical:20, padding:10, borderRadius:2}}>
+              <Text style={{color:'#00000088', fontSize:16}}>${visaData.total}.00</Text>
+          </View>
+          {/* <TextInput
             style={[styles.input, {marginBottom:30, fontWeight:'bold'}]}
             placeholder="Amount"
-            onChangeText={(text) => handleOnchange(text, "amount")}
-            // value={billingDetail?.amount}
-            editable = {false}
-          />
+            // onChangeText={(text) => handleOnchange(text, "amount")}
+            value={visaData.total}
+            // editable = {false}
+          /> */}
 
           <TouchableOpacity
             onPress={handleSubmitPay}
@@ -161,13 +231,10 @@ export default function CardPaymentScreen({ navigation }) {
               <Paystack
                 // paystackKey="pk_live_161c76d517eb1046087a90644b3254a012864f6a"
                 paystackKey="pk_test_d666de567abe8f9f66fa22c96715dd9e6759a777"
-                amount="200"
-                billingEmail="ghorizongroups@gmail.com"
-                billingMobile="+2348139444402"
-                // amount={billingDetail.amount}
-                // billingEmail={billingDetail.billingEmail}
-                // billingMobile={billingDetail.billingMobile}
-                activityIndicatorColor="green"
+                amount={visaData.total}
+                billingEmail={user.email}
+                billingMobile={visaData.phoneNumber}
+                activityIndicatorColor="blue"
                 onCancel={(e) => {
                   // handle response here
                   Toast.show("Transaction Cancelled!!", {

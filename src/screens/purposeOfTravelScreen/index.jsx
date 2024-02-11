@@ -12,16 +12,23 @@ import { FontAwesome, Ionicons} from '@expo/vector-icons'
 import BackArrow from '../../components/backArrow'
 import { auth, db } from '../../firebase';
 import { AuthContext } from '../../config/AuthContext'
-import { doc, getDoc, setDoc, serverTimestamp, updateDoc, collection, query, where  } from "firebase/firestore";
+import { doc, getDoc, setDoc, serverTimestamp, updateDoc, collection, query, where, update  } from "firebase/firestore";
+import { VisaContext } from "../../config/VisaContext";
 
 
 export default function PurposeOfTravelScreen({ navigation }) {
 
+  //  const visaId = route.params;
+
+  const {visaId} = useContext(VisaContext)
+
+  console.log('visa iD',visaId)
+   
    const [selectedItem, setSelectedItem] = useState(null);
    const [errorMessage, setErrorMessage] = useState('')
    const selectedData = [
-    {value:'Tourism', title:'Tourism', image:require('../../../assets/images/singleTourist.png')},
-    {value:'Study', title: 'Study', image:require('../../../assets/images/student.jpeg')},
+    {value:'Tourism', title:'Tourism', image:require('../../../assets/images/tourist.jpg')},
+    {value:'Study', title: 'Study', image:require('../../../assets/images/student.png')},
    ]
 
     // React.useLayoutEffect(() => {
@@ -59,92 +66,31 @@ export default function PurposeOfTravelScreen({ navigation }) {
       console.log(user.uid)
     
     
-      // const getUser = async() => {
-      //   const docRef = doc(db, "travellers", user.uid);
-      //     const docSnap = await getDoc(docRef);
-          
-      //     if (docSnap.exists()) {
-    
-      //       setUserData(docSnap.data())
-            
-      //     } else {
-    
-      //       console.log("No such document!");
-      //     }
-      // }
-    
-      // useEffect(()=>{
-      //   getUser()
-      // }, [])
-    
-      // console.log(userData)
-    
-
     const handlePurpose = async() => {
 
         if(selectedItem !==null){
 
         try {
 
+            await updateDoc(doc(db, "visa", visaId), {
 
-            // const q = query(collection(db, "order"), where("userId", "==", user.uid));
+                travelPurpose : selectedItem,
 
-            // console.log(q)
+                timeStamp: serverTimestamp(),
 
-            // await updateDoc(doc(db, "order", user.uid), {
+             })
 
-            //     travelPurpose : selectedItem,
-
-            //     timeStamp: serverTimestamp(),
-
-            //  });
-
-
-          // const docRef = doc(db, "order", XuBPcFDfHXBDyalvfvXY);
-
-          //   await updateDoc(docRef, {
+            .then(() => {
               
-          //     travelPurpose : selectedItem,
-
-          //     timeStamp: serverTimestamp(),
-
-          //   });
-
-
-
-          // db.collection("order").doc(user.uid).update({
-
-          //   travelPurpose : selectedItem,
-
-          //   timeStamp: serverTimestamp(),
-
-          // }).then(function() {
-
-          //   console.log("Frank food updated");
-
-          //   navigation.navigate("VisaTypeScreen");
-
-          // });
-
-
-
-
-           await updateDoc(doc(db, "travellers", user.uid), {
-        
-        travelPurpose : selectedItem,
-        timeStamp: serverTimestamp(),
-        
-
-        }).then(() => {
-          // setLoading(false)
-          // showToast()
-          navigation.navigate("VisaTypeScreen");
+              navigation.navigate("VisaTypeScreen");
             
         })
   
           
         } catch (error) {
+
           console.log('error:',error.message)
+
         }
 
        
@@ -156,6 +102,7 @@ export default function PurposeOfTravelScreen({ navigation }) {
         
   }
   return (
+    
     <View style={styles.container}>
     {/* <ProgressBar
       style={styles.progressBar}

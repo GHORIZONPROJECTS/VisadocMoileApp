@@ -6,6 +6,14 @@
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
+    "plugins": [
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Please allow VisaDoc to access your photos."
+        }
+      ]
+    ],
     "splash": {
       "image": "./assets/splash.png",
       "resizeMode": "contain",
@@ -15,9 +23,12 @@
       "**/*"
     ],
     "ios": {
+      "bundleidentifier": "com.Visadocflymate.VisaDoc",
       "supportsTablet": true
     },
     "android": {
+      "package": "com.Visadocflymate.VisaDoc",
+      "versionCode": 1,
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
